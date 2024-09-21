@@ -2,10 +2,20 @@
     <el-dialog v-model="dialogVisible" :title="title" @close="handleClose" width="600">
         <hr>
         <div v-if="(actionContent === 'update' || actionContent === 'view') && categoryUpdate">
-            <CategoryForm :data="category"  :view-mode="actionContent" />
+            <CategoryForm   
+            @updateCategory="handleSubmitUpdate"
+            :data="category" 
+            :view-mode="actionContent" 
+            />
         </div>
+
         <div v-else-if="actionContent === 'delete'">
-            delete
+            <el-alert title="Xóa loại sản phẩm" type="warning" description="Bạn có chắc muốn xóa loại sản phẩm này?"
+                show-icon />
+            <div class="dialog-footer">
+                <el-button @click="handleClose">Hủy</el-button>
+                <el-button type="primary" @click="confirmDelete">Xác nhận</el-button>
+            </div>
         </div>
     </el-dialog>
 </template>
@@ -47,9 +57,33 @@ watch(() => props.category, (newCategory) => {
 const emit = defineEmits<{
     (e: 'update:visibleD', value: boolean): void;
     (e: 'update:action', value: string): void;
+    (e: 'delete'): void;
+    (e: 'updateCategory', value: any): void;
 }>();
-
+ 
 const handleClose = () => {
     emit('update:visibleD', false);
 };
+
+
+const handleSubmitUpdate =(data: any) => {
+    console.log('id', data.id)
+    emit('updateCategory', data);
+}
+
+
+const confirmDelete = () => {
+    handleClose();
+    emit('delete');
+
+}
+
 </script>
+
+<style>
+.dialog-footer {
+    margin: 10px;
+    display: flex;
+    justify-content: right;
+}
+</style>

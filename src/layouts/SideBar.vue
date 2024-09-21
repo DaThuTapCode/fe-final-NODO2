@@ -1,7 +1,7 @@
 <template>
     <el-row class="tac">
         <el-col>
-            <el-menu style="height: 100vh; border-radius: 8px;" active-text-color="#ffd04b" background-color="#1E1E2F"
+            <el-menu style="height: 98vh; border-radius: 8px;" active-text-color="#ffd04b" background-color="#1E1E2F"
                 class="el-menu-vertical-demo" default-active="2" text-color="#fff" @open="handleOpen"
                 @close="handleClose">
                 <el-sub-menu index="1">

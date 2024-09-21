@@ -6,7 +6,7 @@
     <div>
         <footer>
             <div>
-                © 2022 Nguyen Trong Phu
+                © 2024 Nguyen Trong Phu
             </div>
         </footer>
     </div>
