@@ -1,5 +1,6 @@
 import CategoryCreate from "@/components/category/CategoryCreate.vue";
 import CategoryTable from "@/components/category/CategoryTable.vue";
+import ProductCreate from "@/components/product/ProductCreate.vue";
 import ProductForm from "@/components/product/ProductForm.vue";
 import ProductTable from "@/components/product/ProductTable.vue";
 import AdminView from "@/views/AdminView.vue";
@@ -17,7 +18,7 @@ const routes: Array<RouteRecordRaw> = [
                 component: ProductView,
                 children: [
                     {path: 'list', component: ProductTable, name: 'ListProduct'},
-                    {path: 'create', component: ProductForm, name: 'CreateProductForm'}
+                    {path: 'create', component: ProductCreate, name: 'CreateProductForm'}
                 ]
             },
             {

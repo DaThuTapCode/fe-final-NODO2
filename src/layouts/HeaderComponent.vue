@@ -13,8 +13,9 @@
         line-height: 50px;
     }
         */
+
     h1 {
-        color: white;
+        color: #2A3650;
         text-align: center;
     } 
 </style>

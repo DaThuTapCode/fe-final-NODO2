@@ -12,7 +12,7 @@
           </el-form-item>
         </el-col>
 
-        <el-col :span="6">
+        <el-col :span="3">
           <span>Mã</span>
           <el-form-item>
             <el-input v-model="paramSearch.categoryCode" placeholder="Nhập mã cần tìm" />
@@ -32,8 +32,7 @@
             <el-date-picker v-model="paramSearch.endDate" type="date" placeholder="Chọn ngày bắt đầu" />
           </el-form-item>
         </el-col>
-        <el-col :span="3" >
-          <span>z</span>
+        <el-col :span="3">
           <el-form-item>
             <div>
               <el-button type="success" :icon="Search" round @click="handleSearch">
@@ -42,24 +41,40 @@
             </div>
           </el-form-item>
         </el-col>
-
+        <el-col :span="3">
+          <el-form-item>
+            <div>
+              <el-dropdown>
+                <el-button :icon="Document" type="primary">
+                  Xuất excel<el-icon class="el-icon--right"><arrow-down /></el-icon>
+                </el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item @click="handleExportExcel(1)" :icon="Document">Xuất toàn
+                      bộ</el-dropdown-item>
+                    <el-dropdown-item @click="handleExportExcel">Xuất theo tìm
+                      kiếm</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+          </el-form-item>
+        </el-col>
       </el-row>
-
-
-
     </div>
-
   </el-form>
 
 </template>
 
 <script lang="ts" setup>
-import { Search } from '@element-plus/icons-vue';
+import { CategoryService } from '@/services/admin/category/CategoryService';
+import { Search, Document } from '@element-plus/icons-vue';
 import { reactive, ref } from 'vue';
 const handleSearch = () => {
   // Thực hiện tìm kiếm
   console.log('Tìm kiếm: ', paramSearch);
 };
+const categoryService = new CategoryService();
 
 const paramSearch = reactive({
   categoryCode: null,
@@ -68,6 +83,20 @@ const paramSearch = reactive({
   endDate: null,
 });
 
+// Sự kiện xuất excel
+const handleExportExcel = (mode: number) => {
+  // Xử lý xuất Excel
+  alert('Xuất all');
+  exportE(mode);
+};
+
+const exportE = async(mode: number) => {
+  try {
+    await categoryService.exportExcel(mode);
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 
 </script>

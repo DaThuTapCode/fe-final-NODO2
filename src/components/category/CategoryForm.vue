@@ -44,29 +44,23 @@
             <el-col :span="8">
                 <!-- Ảnh -->
                 <div style="display: flex; justify-content: center;">
-                    <img
-        :src="previewImage || dataC.img"
-        style="max-width: 100%; height: 150px; min-width: 60%; border-radius: 5px; border: solid 1px lightgray; padding: 5px;"
-      />
+                    <img v-if="dataC.img" :src="dataC.img" alt="haha"
+                        style="max-width: 100%; height: 150px; min-width: 60%; border-radius: 5px; border: solid 1px lightgray; padding: 5px;" />
+                    <img  v-else-if="!dataC.img" :src="previewImage"
+                        style="max-width: 100%; height: 150px; min-width: 60%; border-radius: 5px; border: solid 1px lightgray; padding: 5px;" />
                 </div>
                 <!-- Nút chọn ảnh -->
                 <div style="display: flex; justify-content: center; padding: 10px"
                     v-if="viewMode === 'update' || viewMode === 'create'">
                     <el-form-item prop="fileImg">
-                        <el-upload class="upload-demo" 
-                            v-model="fileIsSelected" 
-                            action="#" 
-                            :limit="1"
-                            :show-file-list="true" 
-                            :auto-upload="false" 
-                            :before-upload="handleBeforeUpload"
-                            :on-change="handleFileChange" 
+                        <el-upload class="upload-demo" v-model="fileIsSelected" action="#" :show-file-list="false"
+                            :auto-upload="false" :before-upload="handleBeforeUpload" :on-change="handleFileChange"
                             ref="uploadRef">
                             <el-button type="primary">Chọn ảnh</el-button>
                         </el-upload>
                         <!-- Nút xóa ảnh nếu đã chọn -->
                         <el-button style="align-items: normal;" @click="handleDeleteFileSelected"
-                            v-if="fileIsSelected">X</el-button>
+                            :disabled="!fileIsSelected">X</el-button>
                     </el-form-item>
                 </div>
             </el-col>
@@ -83,37 +77,35 @@ const props = defineProps<{
     data: any;
 }>();
 
-
-
-
-
-const previewImage = ref<string | null>(null); // Lưu trữ hình ảnh xem trước
+const previewImage = ref<any>(); // Lưu trữ hình ảnh xem trước
 const fileIsSelected = ref<File | null>(null); // Lưu trữ file đã chọn
 
 // Hàm xử lý thay đổi file
-const handleFileChange = (fileList: any) => {
-  if (fileList.length) {
-    const file = fileList[0].raw; // Lấy file từ danh sách
-    previewImage.value = URL.createObjectURL(file); // Tạo URL xem trước cho file đã chọn
-  } else {
-    previewImage.value = null; // Đặt lại nếu không có file
-  }
+const handleFileChange = (file: any) => {
+    console.log('file da chon: ', file)
+    if (file) {
+        previewImage.value = URL.createObjectURL(file.raw); // Tạo URL xem trước cho file đã chọn
+        fileIsSelected.value = file;
+        console.log(previewImage.value)
+    } else {
+        previewImage.value = null; // Đặt lại nếu không có file
+    }
 };
 
 // Hàm xử lý xóa file đã chọn
 const handleDeleteFileSelected = () => {
-  previewImage.value = null; // Đặt lại hình ảnh xem trước
-  fileIsSelected.value = null; // Đặt lại file đã chọn
+    previewImage.value = null; // Đặt lại hình ảnh xem trước
+    fileIsSelected.value = null; // Đặt lại file đã chọn
 };
 
 // Hàm kiểm tra file trước khi tải lên
 const handleBeforeUpload = (file: File) => {
-  // Kiểm tra kiểu file hoặc kích thước nếu cần
-  const isImage = file.type.startsWith('image/');
-  if (!isImage) {
-    NotificationUtil.openMessageError('Bạn chỉ có thể tải lên hình ảnh!');
-  }
-  return isImage; // Trả về true nếu hợp lệ
+    // Kiểm tra kiểu file hoặc kích thước nếu cần
+    const isImage = file.type.startsWith('image/');
+    if (!isImage) {
+        NotificationUtil.openMessageError('Bạn chỉ có thể tải lên hình ảnh!');
+    }
+    return isImage; // Trả về true nếu hợp lệ
 };
 
 
@@ -145,7 +137,7 @@ const rules = {
 
 const emit = defineEmits<{
     (e: 'createCategory', value: FormData): void,
-    (e: 'updateCategory',value: any): void
+    (e: 'updateCategory', value: any): void
 }>();
 
 
@@ -170,20 +162,20 @@ const handleSubmitCreate = () => {
 };
 
 // Bắt sự kiện nút update;
-const handleSubmitUpdate = () =>{
+const handleSubmitUpdate = () => {
     formRef.value?.validate((valid: boolean) => {
-        if(valid) {
+        if (valid) {
             const formData = new FormData;
             formData.append('categoryCode', dataC.value.categoryCode);
             formData.append('name', dataC.value.name);
             // formData.append('imgFile', dataC.value.img);
             formData.append('description', dataC.value.description);
             const dataee = {
-               value: formData,
-               id: dataC.value.id
+                value: formData,
+                id: dataC.value.id
             }
             emit('updateCategory', dataee);
-        }else {
+        } else {
             console.log('Lỗi trong form update');
         }
     });

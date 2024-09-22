@@ -20,7 +20,7 @@
     v-if="categories.length"
     :data="categories"
     :row-key="(row: CategoryResponse) => row.id"
-    style="width: 100%; border-radius: 15px; border: solid lightgray 1px;"> 
+    style="width: 100%; border-radius: 15px; "> 
     <!-- Cột ảnh -->
     <el-table-column prop="img" label="" width="120">
       <template v-slot="{ row }">
@@ -100,7 +100,6 @@ const fetchCategories = async () => {
     console.error('Lỗi khi fetch category: ', error)
   }
 }
-
 
 //Provie
 provide('fetchCategories', fetchCategories);

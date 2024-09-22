@@ -67,9 +67,11 @@
                                 </el-button>
                                 <template #dropdown>
                                     <el-dropdown-menu>
-                                        <el-dropdown-item @click="handleExportExcelAll" :icon="Document">Xuất toàn bộ</el-dropdown-item>
-                                        <el-dropdown-item @click="handleExportExcelBySearch">Xuất theo tìm kiếm</el-dropdown-item>
-                                        
+                                        <el-dropdown-item @click="handleExportExcelAll" :icon="Document">Xuất toàn
+                                            bộ</el-dropdown-item>
+                                        <el-dropdown-item @click="handleExportExcelBySearch">Xuất theo tìm
+                                            kiếm</el-dropdown-item>
+
                                     </el-dropdown-menu>
                                 </template>
                             </el-dropdown>
@@ -117,7 +119,6 @@ const route = useRoute();
 const router = useRouter();
 
 // Theo dõi query params từ route để cập nhật paramSearch
-// Theo dõi query params từ route và cập nhật paramSearch
 // Cập nhật paramSearch từ query params
 watch(
     () => route.query,
@@ -125,35 +126,19 @@ watch(
         // Chỉ gán giá trị cho paramSearch nếu không rỗng và không phải là null
         if (newQuery.startDate && typeof newQuery.startDate === 'string') {
             paramSearch.startDate = newQuery.startDate;
-        } else {
-            paramSearch.startDate = ''; // Hoặc có thể để lại giá trị mặc định
-        }
-
-        // Lặp lại cho các tham số khác
+        } 
         if (newQuery.endDate && typeof newQuery.endDate === 'string') {
             paramSearch.endDate = newQuery.endDate;
-        } else {
-            paramSearch.endDate = ''; // Hoặc giá trị mặc định
         }
-
         if (newQuery.name && typeof newQuery.name === 'string') {
             paramSearch.name = newQuery.name;
-        } else {
-            paramSearch.name = '';
-        }
-
+        } 
         if (newQuery.productCode && typeof newQuery.productCode === 'string') {
             paramSearch.productCode = newQuery.productCode;
-        } else {
-            paramSearch.productCode = '';
-        }
-
+        } 
         if (newQuery.categoryID && typeof newQuery.categoryID === 'string') {
             paramSearch.categoryID = newQuery.categoryID;
-        } else {
-            paramSearch.categoryID = '';
-        }
-
+        } 
     },
     { immediate: true }
 );
@@ -184,16 +169,17 @@ const handleSearch = () => {
     const filteredParams = Object.fromEntries(
         Object.entries(queryParams).filter(([_, v]) => v !== undefined)
     );
-
+    // Chuyển đối tượng `filteredParams` thành chuỗi query
+    const queryString = new URLSearchParams(filteredParams as Record<string, string>).toString();
     // Đẩy tham số tìm kiếm lên route
     router.push({
         path: '/admin/product/list',
         query: filteredParams
     });
 
-    emit('search', paramSearch);
+    console.log('ehe', queryString);
+    emit('search', queryString);
 };
-
 
 
 // Hủy lọc

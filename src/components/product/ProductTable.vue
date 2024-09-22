@@ -23,8 +23,8 @@
     <el-table-column prop="modifiedDate" label="Ngày sửa cuối" width="160" />
     <el-table-column prop="modifiedBy" label="Người sửa cuối" width="120" />
     <el-table-column fixed="right" label="Operations" min-width="150">
-      <template #default>
-        <ProductAction />
+      <template #default="{ row }">
+        <ProductAction :product="row" @delete="deleteProduct"/>
       </template>
     </el-table-column>
   </el-table>
@@ -34,7 +34,7 @@
 import { ProductService } from '@/services/admin/product/ProductService';
 import { ProductSearchResponse } from '@/type/product/response/ProductSearchResponse';
 import { PaginationObject } from '@/type/util/PaginationObject';
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, provide, ref, watch } from 'vue';
 import ProductAction from './ProductAction.vue';
 import ProductFormSearch from './ProductFormSearch.vue';
 import { useRoute } from 'vue-router';
@@ -54,25 +54,45 @@ const pagination = ref<PaginationObject>({
   direction: null
 });
 
+const paramsSearch = ref({});
 //Hứng dữ liệu params search Product
-const paramsSearch = ref({
-  productCode: null,
-  name: null,
-  startDate: null,
-  endDate: null,
-  categoryID: null
-})
+const paramsSearchQuery = ref(null);
 
 //Load dữ liệu danh sách product
 const fetchProduct = async (paginationF: any, paramsSearchF: any) => {
   try {
     const response = await productService.getProductList(paginationF, paramsSearchF);
+    paramsSearch.value = paginationF;
     products.value = response.content;
     pager.value = response;
   } catch (error) {
     console.error('Loi khi lay danh sach san pham: ', error);
   }
 }
+
+// XÓa sản phẩm
+const deleteProduct = async (id: number) => {
+  try {
+    await productService.deleteProduct(id);
+    fetchProduct(pagination.value, paramsSearch.value);
+  } catch (error) {
+    console.error('Lỗi khi xóa sản phẩm');
+  }
+}
+
+//Lấy sản phẩm theo id
+const getProductById = async(id: number) => {
+  try {
+    const response = await productService.getProductById(id);
+    return response;
+  } catch (error) {
+    console.error('Lỗi khi lấy sản phẩm theo id: ', error);
+  }
+}
+
+//provide
+provide('deleteProduct', deleteProduct);
+provide('getProductById', getProductById);
 
 const route = useRoute();
 const queryString = ref('');
@@ -92,7 +112,7 @@ const handleSearchFetchProduct = async (dataSearch: any) => {
 
   console.log('Current Query string:', queryString.value);
   console.log('dataSearch:', dataSearch);
-  
+  paramsSearchQuery.value = dataSearch;
   fetchProduct(pagination.value, dataSearch);
 };
 
@@ -101,11 +121,11 @@ const handleSearchFetchProduct = async (dataSearch: any) => {
 //Đổi trang
 const handlePageChange = (newPage: any) => {
   pagination.value.page = newPage - 1;
-  fetchProduct(pagination.value, paramsSearch.value);
+  fetchProduct(pagination.value, paramsSearchQuery.value);
 }
 
 onMounted(() => {
-  fetchProduct(pagination.value, paramsSearch.value);
+  fetchProduct(pagination.value, paramsSearchQuery.value);
 })
 
 </script>

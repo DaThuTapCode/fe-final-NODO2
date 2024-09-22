@@ -13,6 +13,8 @@ export class CategoryService {
 
     private uriUpdateCategory = '/api/category/update';
     private uriCreateCategory = '/api/category/create';
+    
+    private uriExportExcel = "/api/excel/categories"
 
     async getCategoryById(id: number): Promise<CategoryResponse> {
         try {
@@ -69,5 +71,31 @@ export class CategoryService {
             // throw error;
         }
     }
+
+    async exportExcel(mode: number) {
+        try {
+            const response = await apiClient.get(`${this.uriExportExcel}/${mode}`, {
+                responseType: 'blob' // Đặt kiểu phản hồi là blob để nhận file
+            });
+            
+            // Tạo URL từ blob
+            const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const downloadUrl = window.URL.createObjectURL(blob);
+    
+            // Tạo link để tải file
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `exported-file-${mode}.xlsx`; // Tên file khi tải về
+            link.click();
+    
+            // Giải phóng bộ nhớ
+            window.URL.revokeObjectURL(downloadUrl);
+    
+            NotificationUtil.openMessageSuccess('Xuất excel thành công');
+        } catch (error) {
+            NotificationUtil.openMessageError('Lỗi xuất excel!');
+        }
+    }
+    
 
 }

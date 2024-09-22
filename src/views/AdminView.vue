@@ -19,7 +19,7 @@ import HeaderComponent from '@/layouts/HeaderComponent.vue';
 
 <style>
 header.el-header{
-    background-color: #1E1E2F ;
+    background-color: white ;
 }
 
 </style>
