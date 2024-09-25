@@ -1,96 +1,18 @@
-<template>
-  <h1 style="text-align: center;" v-if="viewMode === 'create'">Thêm sản phẩm mới
-  </h1>
-  <el-row :gutter="20">
-    <el-col :span="16">
-      <el-form ref="formProductRef" :rules="rules" :model="dataProduct" label-width="auto">
-
-        <el-form-item prop="productCode" label="Mã sản phẩm">
-          <el-input :disabled="viewMode === 'view'" v-model="dataProduct.productCode" />
-        </el-form-item>
-
-        <el-form-item prop="name" label="Tên sản phẩm">
-          <el-input :disabled="viewMode === 'view'" v-model="dataProduct.name" />
-        </el-form-item>
-
-        <el-form-item prop="description" label="Mô tả">
-          <el-input type="textarea" v-model="dataProduct.description" :disabled="viewMode === 'view'" />
-        </el-form-item>
-
-        <el-form-item label="Danh mục">
-          <el-select v-model="categoriesIsSelected" multiple placeholder="Select" style="width: 240px">
-            <el-option :disabled="viewMode === 'view'" v-for="item in dataProduct.categories" :key="item.id"
-              :label="item.name" :value="item.name" />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item prop="price" label="Giá">
-          <el-input type="number" :disabled="viewMode === 'view'" v-model="dataProduct.price" />
-        </el-form-item>
-
-        <el-form-item prop="quantity" label="Số lượng">
-          <el-input type="number" :disabled="viewMode === 'view'" v-model="dataProduct.quantity" />
-        </el-form-item>
-
-        <el-form-item v-if="viewMode === 'view'" label="Người sửa cuối">
-          <el-input :disabled="viewMode === 'view'" v-model="dataProduct.modifiedBy" />
-        </el-form-item>
-
-        <el-form-item v-if="viewMode === 'view'" label="Ngày sửa cuối">
-          <el-input :disabled="viewMode === 'view'" v-model="dataProduct.modifiedDate" />
-        </el-form-item>
-
-        <el-form-item v-if="viewMode === 'view'" label="Người tạo">
-          <el-input :disabled="viewMode === 'view'" v-model="dataProduct.createdBy" />
-        </el-form-item>
-
-        <el-form-item v-if="viewMode === 'view'" label="Ngày tạo">
-          <el-input :disabled="viewMode === 'view'" v-model="dataProduct.createdDate" />
-        </el-form-item>
-
-        <el-form-item style="float: right;">
-          <el-button type="primary" @click="onSubmit">Create</el-button>
-        </el-form-item>
-
-      </el-form>
-    </el-col>
-
-    <el-col :span="8">
-      <!-- Ảnh -->
-      <div style="display: flex; justify-content: center;">
-        <img :src="previewImage"
-          style="max-width: 100%; height: 150px; min-width: 60%; border-radius: 5px; border: solid 1px lightgray; padding: 5px;" />
-      </div>
-      <!-- Nút chọn ảnh -->
-      <div style="display: flex; justify-content: center; padding: 10px"
-        v-if="viewMode === 'update' || viewMode === 'create'">
-        <el-form-item prop="fileImg">
-          <el-upload class="upload-demo" v-model="fileIsSelected" action="#" :show-file-list="false"
-            :auto-upload="false" :before-upload="handleBeforeUpload" :on-change="handleFileChange" ref="uploadRef">
-            <el-button type="primary">Chọn ảnh</el-button>
-          </el-upload>
-          <!-- Nút xóa ảnh nếu đã chọn -->
-          <el-button style="align-items: normal;" @click="handleDeleteFileSelected"
-            :disabled="!fileIsSelected">X</el-button>
-        </el-form-item>
-      </div>
-    </el-col>
-  </el-row>
-
-</template>
-
 <script lang="ts" setup>
+import { CategoryService } from '@/services/admin/category/CategoryService';
+import { PaginationObject } from '@/type/util/PaginationObject';
 import { NotificationUtil } from '@/util/Notification';
-import { reactive, defineProps, ref, watch, onMounted, inject } from 'vue'
+import { reactive, defineProps, ref, watch, onMounted, inject, computed } from 'vue'
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 
 /// Xử lý ảnh 
-const previewImage = ref<any>(); // Lưu trữ hình ảnh xem trước
+const previewImage = ref<any>(null); // Lưu trữ hình ảnh xem trước
 const fileIsSelected = ref<File | null>(null); // Lưu trữ file đã chọn
-
+const urlImageU = ref<any>('');
 // Hàm xử lý thay đổi file
 const handleFileChange = (file: any) => {
-  console.log('file da chon: ', file)
   if (file) {
     previewImage.value = URL.createObjectURL(file.raw); // Tạo URL xem trước cho file đã chọn
     fileIsSelected.value = file;
@@ -101,28 +23,35 @@ const handleFileChange = (file: any) => {
   }
 };
 
-//
-const rules = {
+
+const rules = computed(() => ({
   productCode: [
-    { required: true, message: 'Vui lòng nhập mã sản phẩm', trigger: 'blur' },
-    { min: 10, max: 10, message: 'Mã sản phẩm phải chính xác 10 ký tự', trigger: 'change' }
+    { required: true, message: t('codeRequired'), trigger: 'blur' },
+    { min: 10, max: 10, message: t('codeLengthIs10'), trigger: 'change' },
+    { pattern: /^[a-zA-Z0-9]+$/, message: t('codeNumbersOnly'), trigger: 'change' }
   ],
   name: [
-    { required: true, message: 'Vui lòng nhập tên sản phẩm', trigger: 'blur' },
-    { min: 3, max: 255, message: 'Tên sản phẩm từ 3 - 255 ký tự', trigger: 'change' }
+    { required: true, message: t('nameRequired'), trigger: 'blur' },
+    { min: 3, max: 255, message: t('nameLength3to255'), trigger: 'change' }
   ],
   description: [
-    { required: true, message: 'Vui lòng nhập mô tả sản phẩm', trigger: 'blur' },
-    { min: 3, max: 255, message: 'Mô tả sản phẩm từ 3 - 255 ký tự', trigger: 'change' }
+    { required: true, message: t('descriptionRequired'), trigger: 'blur' },
+    { min: 3, max: 255, message: t('descriptionLength3to255'), trigger: 'change' }
+  ],
+  category: [
+    { required: true, message: t('descriptionRequired'), trigger: 'blur' },
+
   ],
   price: [
-    { required: true, message: 'Vui lòng nhập giá sản phẩm', trigger: 'blur' },
+    { required: true, message: t('priceRequired'), trigger: 'blur' },
     {
       validator: (rule: any, value: number, callback: any) => {
         const numericValue = Number(value); // Chuyển đổi thành số
 
         if (!Number.isInteger(numericValue) || numericValue <= 0) {
-          callback(new Error('Giá sản phẩm phải là số nguyên lớn hơn 0'));
+          callback(new Error(t('priceIsIntegerAndGreaterThan0')));
+        } else if (numericValue > 2000000000) {
+          callback(new Error(t('priceIsIntegerAndLessThan2000000000')));
         } else {
           callback();
         }
@@ -131,21 +60,23 @@ const rules = {
     }
   ],
   quantity: [
-    { required: true, message: 'Vui lòng nhập số lượng', trigger: 'blur' },
+    { required: true, message: t('quantityRequired'), trigger: 'blur' },
     {
       validator: (rule: any, value: number, callback: any) => {
         const numericValue = Number(value); // Chuyển đổi thành số
-
         if (!Number.isInteger(numericValue) || numericValue <= 0) {
-          callback(new Error('Số lượng phải là số nguyên lớn hơn 0' + value));
-        } else {
+          callback(new Error(t('quantityIsIntegerAndGreaterThan0')));
+        } else if (numericValue > 2000000000) {
+          callback(new Error(t('quantityIsIntegerAndLessThan2000000000')));
+        }
+        else {
           callback();
         }
       },
       trigger: ['blur', 'change']
     }
   ]
-};
+}));
 
 
 // Hàm xử lý xóa file đã chọn
@@ -159,20 +90,34 @@ const handleBeforeUpload = (file: File) => {
   // Kiểm tra kiểu file hoặc kích thước nếu cần
   const isImage = file.type.startsWith('image/');
   if (!isImage) {
-    NotificationUtil.openMessageError('Bạn chỉ có thể tải lên hình ảnh!');
+    NotificationUtil.openMessageError(t('error'), 'Bạn chỉ có thể tải lên hình ảnh!');
   }
   return isImage; // Trả về true nếu hợp lệ
 };
 
 const createProduct = inject<(data: FormData) => Promise<void>>('createProduct');
+const updateProduct = inject<(data: FormData) => Promise<void>>('updateProduct');
 
-const createPr = (data: FormData) => {
-  if (createProduct) {
-    createProduct(data);
+
+// Chứa dữ liệu phân trang
+const pagination: PaginationObject = {
+  page: 0,
+  size: 1000000,
+  sortBy: null,
+  direction: null
+};
+const categoryService = new CategoryService();
+const categories = ref<any>([]);
+
+// Load dữ liệu danh sách category
+const fetchCategories = async () => {
+  try {
+    const response = await categoryService.getPageCategory(pagination, '');
+    categories.value = response.content;
+  } catch (error) {
+    console.error('Lỗi fetchCategories trong ProductTable', error);
   }
-}
-
-
+};
 
 //props
 const props = defineProps<{
@@ -180,18 +125,51 @@ const props = defineProps<{
   viewMode: 'update' | 'create' | 'view',
 }>();
 const dataProduct = ref(props.dataProduct);
-watch(() => props.dataProduct, (newVal) => {
-  dataProduct.value = newVal;
-  categoriesIsSelected.value = newVal.categories.map((category: any) => category.name);
-});
+// watch(() => props.dataProduct, (newVal) => {
+//   dataProduct.value = newVal;
+//   categoriesIsSelected.value = newVal.categories.map((category: any) => category.name);
+// });
 
 
 onMounted(() => {
-  // categoriesIsSelected.value = dataProduct.value.categories.map((category: any) => category.name);
-})
+  fetchCategories();
+
+  // Kiểm tra nếu viewMode là 'update' hoặc 'view'
+  if (props.viewMode === 'update' || props.viewMode === 'view') {
+    
+    // Kiểm tra nếu dataProduct.value.categories tồn tại
+    if (dataProduct.value.categories) {
+      
+      // Kiểm tra xem categories có phải là chuỗi hay không
+      if (typeof dataProduct.value.categories === 'string') {
+        alert(dataProduct.value.categories);
+        console.log(dataProduct.value.categories);
+      } else {
+        // Nếu categories không phải là chuỗi, giả định là mảng và map lấy category.name
+        categoriesIsSelected.value = dataProduct.value.categories.map((category: any) => category.name);
+      }
+
+    }
+  }
+});
+
 
 const formProductRef = ref();
 
+const createPr = (data: FormData) => {
+  if (createProduct) {
+    createProduct(data);
+  }
+}
+const updatePr = (formData: FormData) => {
+  if (updateProduct) {
+    console.log('DATA UPDATE:');
+    formData.forEach((value, key) => {
+      console.log(`${key}: ${value}`);
+    });
+    updateProduct(formData);
+  }
+}
 const onSubmit = () => {
   formProductRef.value?.validate((valid: boolean) => {
     if (valid) {
@@ -200,14 +178,20 @@ const onSubmit = () => {
       formData.append('name', dataProduct.value.name);
       formData.append('price', dataProduct.value.price);
       formData.append('quantity', dataProduct.value.quantity);
-      formData.append('description', dataProduct.value.quantity);
+      formData.append('description', dataProduct.value.description);
       if (fileIsSelected.value) {
         formData.append('imgFile', dataProduct.value.fileImg);
-
       }
-      // formData.append('categoryIds', dataProduct.value.categoryIds);
+      categoriesIsSelected.value.forEach(categoryId => {
+        formData.append('categoryIds', categoryId); // Thêm từng categoryId vào FormData
+      });
       console.log('data form create', dataProduct.value);
-      createPr(formData);
+      if (props.viewMode === 'create') {
+        createPr(formData);
+      } else {
+        updatePr(formData);
+      }
+
     } else {
       console.log('Lỗi trong form thêm');
     }
@@ -216,4 +200,168 @@ const onSubmit = () => {
 }
 const categoriesIsSelected = ref([]);
 
+const getImageUpdate = (img: any) => {
+  if (previewImage.value !== null) {
+    return previewImage.value;
+  } else {
+    if (img !== null || img !== undefined || img !== '') {
+      return urlImageU.value = img;
+    } else {
+      return '/noimage.png'
+    }
+  }
+}
+const getImageCreate = () => {
+  if (previewImage.value !== null) {
+    return previewImage.value;
+  } else {
+      return '/noimage.png'
+    }
+  }
+
+
 </script>
+
+<template>
+  <!-- <p style="text-align: center;" v-if="viewMode === 'create'">{{ t('createNewProduct') }}
+  </p> -->
+  <div class="form-zone">
+    <el-form v-if="dataProduct" label-position="top" ref="formProductRef" :rules="rules" :model="dataProduct"
+      label-width="auto">
+      <el-row :gutter="20">
+        <el-col :span="7" style="background-color: white; padding: 30px;">
+          <div>
+            <!-- Ảnh -->
+            <div style="display: flex; justify-content: center;">
+              <img class="image-view" v-if="viewMode === 'create'" :src="getImageCreate()" />
+
+              <img class="image-view" v-else-if="viewMode === 'view'" :src="dataProduct.img" />
+
+              <img class="image-view" v-else :src="getImageUpdate(dataProduct.img)" />
+            </div>
+
+            <!-- Nút chọn ảnh -->
+            <div style="display: flex; justify-content: center; padding: 10px"
+              v-if="viewMode === 'update' || viewMode === 'create'">
+              <el-form-item prop="fileImg">
+                <el-upload class="upload-demo" v-model="fileIsSelected" action="#" :show-file-list="false"
+                  :auto-upload="false" :before-upload="handleBeforeUpload" :on-change="handleFileChange"
+                  ref="uploadRef">
+                  <el-button type="primary">{{ t('selectImage') }}</el-button>
+                </el-upload>
+                <!-- Nút xóa ảnh nếu đã chọn -->
+                <el-button style="align-items: normal;" @click="handleDeleteFileSelected"
+                  :disabled="!fileIsSelected">X</el-button>
+              </el-form-item>
+            </div>
+          </div>
+          <div class="zone-info">
+            <p class="if" style="text-align: center;"> <el-tag type="success">{{ t('ACTIVE') }}</el-tag></p>
+            <p class="if">{{ t('code') }}: {{ dataProduct.productCode }}</p>
+            <p class="if">{{ t('name') }}: {{ dataProduct.name }}</p>
+            <p class="if">{{ t('description') }}: {{ dataProduct.description }}</p>
+            <p class="if"> {{ t('category') }}: {{ dataProduct.category?.join(', ') }} </p>
+            <p class="if">{{ t('price') }}: {{ dataProduct.price }}</p>
+            <p class="if">{{ t('quantity') }}: {{ dataProduct.quantity }}</p>
+          </div>
+        </el-col>
+        <el-col :span="1" style="background-color: transparent">
+
+        </el-col>
+
+        <el-col :span="16" style="background-color: white; padding: 50px;">
+
+          <el-row>
+            <el-col :span="11">
+              <el-form-item prop="productCode" :label="t('code')">
+                <el-input maxlength="10" show-word-limit :disabled="viewMode === 'view' || viewMode === 'update'"
+                  v-model="dataProduct.productCode" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="1">
+
+            </el-col>
+            <el-col :span="11">
+              <el-form-item prop="name" :label="t('name')">
+                <el-input maxlength="255" show-word-limit :disabled="viewMode === 'view'" v-model="dataProduct.name" />
+              </el-form-item>
+
+            </el-col>
+          </el-row>
+
+
+          <el-form-item prop="description" :label="t('description')">
+            <el-input maxlength="255" show-word-limit type="textarea" v-model="dataProduct.description"
+              :disabled="viewMode === 'view'" />
+          </el-form-item>
+
+          <el-form-item v-if="viewMode === 'update' || viewMode === 'view'" :label="t('category')">
+            <el-select v-model="categoriesIsSelected" multiple placeholder="Select" style="width: 240px">
+              <el-option :disabled="viewMode === 'view'" v-for="item in categories" :key="item.id" :label="item.name"
+                :value="item.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item v-else :label="t('category')">
+            <el-select v-model="categoriesIsSelected" multiple placeholder="Select" style="width: 240px">
+              <el-option v-for="item in categories" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+          </el-form-item>
+
+          <el-form-item prop="price" :label="t('price')">
+            <el-input type="number" :disabled="viewMode === 'view'" v-model="dataProduct.price" />
+          </el-form-item>
+
+          <el-form-item prop="quantity" :label="t('quantity')">
+            <el-input type="number" :disabled="viewMode === 'view'" v-model="dataProduct.quantity" />
+          </el-form-item>
+
+          <el-form-item v-if="viewMode === 'view'" :label="t('modifiedBy')">
+            <el-input :disabled="viewMode === 'view'" v-model="dataProduct.modifiedBy" />
+          </el-form-item>
+
+          <el-form-item v-if="viewMode === 'view'" :label="t('modifiedDate')">
+            <el-input :disabled="viewMode === 'view'" v-model="dataProduct.modifiedDate" />
+          </el-form-item>
+
+          <el-form-item v-if="viewMode === 'view'" :label="t('createdBy')">
+            <el-input :disabled="viewMode === 'view'" v-model="dataProduct.createdBy" />
+          </el-form-item>
+
+          <el-form-item v-if="viewMode === 'view'" :label="t('createdDate')">
+            <el-input :disabled="viewMode === 'view'" v-model="dataProduct.createdDate" />
+          </el-form-item>
+
+          <el-form-item style="float: right;">
+            <router-link :to="{ name: 'ListProduct' }" v-if="viewMode !== 'view'"> <el-button type="info">{{ t('back')
+                }}</el-button></router-link>
+            <el-button type="primary" @click="onSubmit" v-if="viewMode === 'create'">{{ t('create') }}</el-button>
+            <el-button type="primary" @click="onSubmit" v-if="viewMode === 'update'">{{ t('update') }}</el-button>
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </el-form>
+  </div>
+
+</template>
+
+<style>
+.form-zone {
+  min-width: 100%;
+  /* max-height: fit-content; */
+}
+
+.image-view {
+  border-radius: 50%;
+  border: solid 1px lightgray;
+  max-width: 50%;
+  min-width: 50%;
+  max-height: 150px;
+  min-height: 150px;
+  margin: 30px;
+  cursor: pointer;
+}
+
+.zone-info p {
+  font-size: small;
+}
+</style>

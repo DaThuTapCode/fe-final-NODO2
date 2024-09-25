@@ -1,12 +1,12 @@
 export interface CategoryResponse {
     id: number;
-    categoryCode: String;
-    name: String;
-    img: String;
+    categoryCode: string;
+    name: string;
+    img: string;
     createdDate: Date;
     modifiedDate: Date;
-    createdBy: String;
-    modifiedBy: String;
-    description: String;
-    status: String;
+    createdBy: string;
+    modifiedBy: string;
+    description: string;
+    status: string;
 }

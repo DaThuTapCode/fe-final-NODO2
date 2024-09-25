@@ -2,6 +2,9 @@
 import { ref } from 'vue';
 import CategoryForm from './CategoryForm.vue';
 import { CategoryService } from '@/services/admin/category/CategoryService';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+
 const categoryService = new CategoryService();
 
 //Gọi api để thêm category mới

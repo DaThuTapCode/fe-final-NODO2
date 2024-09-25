@@ -1,119 +1,107 @@
-<template>
-  <!-- Form search Category -->
-  <CategoryFormSearch />
-  <!-- /Form search Category -->
-  <div>
-    <h1>DANH SÁCH LOẠI SẢN PHẨM</h1>
-  </div>
-  <!-- Phân trang -->
-  <div v-if="pager.totalPages" style="margin-bottom: 20px;">
-    <el-pagination background layout="pager" 
-    :total="pager.totalElements"
-    :page-size="pager.size"
-     @current-change="handlePageChange"
-     />
-  </div>
-  <!-- /Phân trang -->
+<script lang="ts" setup>
+import { CategoryResponse } from '@/type/category/response/CategoryResponse';
+import CategoryActions from './CategoryActions.vue';
+import { defineProps, computed, defineEmits } from 'vue';
+import CategoryFormSearch from './CategoryFormSearch.vue';
+import { useI18n } from 'vue-i18n';
+const { t, locale } = useI18n();
 
- <!-- Bảng -->
- <el-table
-    v-if="categories.length"
-    :data="categories"
-    :row-key="(row: CategoryResponse) => row.id"
-    style="width: 100%; border-radius: 15px; "> 
+// Tạo biến trung gian cho props
+const categories = computed(() => props.categories);
+const pager = computed(() => props.pager);
+
+// Props
+const props = defineProps<{
+  categories: CategoryResponse[],
+  pager: any
+}>();
+
+//Emit
+const emit = defineEmits<{
+  (e: 'pageChange', newPage: number): void,
+  (e: 'sizeChange', newSize: number): void,
+  (e: 'openTab', dataTab: any, categoryId: number): void
+  (e: 'deleted', id: number): void
+}>();
+
+const handleOpenTab = ( dataTab: any, categoryId: number) => {
+  emit('openTab',dataTab, categoryId);
+}
+
+const onPageChange = (newPage: number) => {
+  emit('pageChange', newPage - 1);
+}
+const onSizeChange = (newSize: number) => {
+  emit('sizeChange', newSize);
+}
+const handleDeleted = (id: number) => {
+  emit('deleted', id);
+}
+
+</script>
+
+<template>
+
+  <!-- <div style="margin-bottom: 30px;">
+    <CategoryFormSearch />
+  </div> -->
+  <!-- Bảng -->
+  <el-table border  v-if="categories.length" :data="categories" :row-key="(row: CategoryResponse) => row.id"
+    style="width: 100%;  border-radius: 15px;">
+    <el-table-column prop="STT" label="STT" width="50" />
     <!-- Cột ảnh -->
-    <el-table-column prop="img" label="" width="120">
+    <el-table-column prop="img" :label="t('image')" width="100">
       <template v-slot="{ row }">
-        <img
-          v-if="row.img"
-          :src="row.img"
-          alt="Ảnh"
+        <img v-if="row.img !== null" :src="row.img" alt="Ảnh"
           style="width: 50%; max-height: 50px; border-radius: 10px" />
-        <span v-else>Không có ảnh</span>
+        <img v-if="row.img === null" src="/noimage.png" alt="Ảnh ko có"
+          style="width: 50%; max-height: 50px; border-radius: 10px" />
       </template>
     </el-table-column>
-
-    <!-- Mã danh mục -->
-    <el-table-column prop="categoryCode" label="Mã danh mục" width="150" />
-
-    <!-- Tên danh mục -->
-    <el-table-column prop="name" label="Tên" width="120" />
-
-    <!-- Ngày tạo -->
-    <el-table-column prop="createdDate" label="Ngày tạo" width="180" />
-
-    <!-- Ngày sửa cuối -->
-    <el-table-column prop="modifiedDate" label="Ngày sửa cuối" width="180" />
-
-    <!-- Người tạo -->
-    <el-table-column prop="createdBy" label="Người tạo" width="180" />
-
-    <!-- Người sửa cuối -->
-    <el-table-column prop="modifiedBy" label="Người sửa cuối" width="180" />
-
-    <!-- Trạng thái -->
-    <el-table-column prop="status" label="Trạng thái" width="300">
+    <el-table-column prop="categoryCode" :label="t('categoryCode')" width="150" />
+    <el-table-column prop="name" :label="t('name')" width="120" />
+    <el-table-column prop="description" :label="t('description')" width="120" />
+    <el-table-column prop="createdDate" :label="t('createdDate')" width="180" />
+    <el-table-column prop="modifiedDate" :label="t('modifiedDate')" width="180" />
+    <el-table-column prop="createdBy" :label="t('createdBy')" width="180" />
+    <el-table-column prop="modifiedBy" :label="t('modifiedBy')" width="180" />
+    <el-table-column prop="status" :label="t('status')">
       <template v-slot="{ row }">
-        <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'danger'">{{ row.status }}</el-tag>
+        <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'danger'">{{ t(row.status) }}</el-tag>
       </template>
     </el-table-column>
 
     <!-- Hành động -->
-    <el-table-column fixed="right" label="Hành động" min-width="150">
+    <el-table-column fixed="right" :label="t('action')" min-width="150">
       <template v-slot="{ row }">
-        <CategoryActions @deleted="fetchCategories" :idCategory="row.id" />
+        <!-- @deleted="fetchCategories" -->
+        <CategoryActions @deleted="handleDeleted" @openTab="handleOpenTab" :idCategory="row.id" />
       </template>
     </el-table-column>
   </el-table>
- <!-- /Bảng -->
+  <!-- /Bảng -->
+
   <!-- Hiển thị nếu không có dữ liệu -->
   <div v-else>
     Không có dữ liệu
   </div>
- 
+  <!-- Phân trang -->
+  <div class="demo-pagination-block" style="float: right; margin: 10px;">
+    <el-pagination v-model:current-page="pager.page" 
+    v-model:page-size="pager.size" 
+    :page-sizes="[5, 10, 20, 50]"
+      :size="'default'" 
+      :disabled="false" 
+      :background="false" 
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="pager.totalElements" 
+      @size-change="onSizeChange" @current-change="onPageChange" />
+  </div>
+  <!-- /Phân trang -->
+
 </template>
- 
-<script lang="ts" setup>
-import { CategoryService } from '@/services/admin/category/CategoryService';
-import { CategoryResponse } from '@/type/category/response/CategoryResponse';
-import { PaginationObject } from '@/type/util/PaginationObject';
-import CategoryFormSearch from './CategoryFormSearch.vue';
-import CategoryActions from './CategoryActions.vue';
-import { onMounted, provide, ref } from 'vue';
-
-const categories = ref<CategoryResponse[]>([]);
-const pager = ref<any>({});
-const categoryService = new CategoryService();
-const pagination: PaginationObject = {
-  page: 0,
-  size: 8,
-  sortBy: null,
-  direction: null
-}
-const fetchCategories = async () => {
-  try {
-    const response = await categoryService.getPageCategory(pagination);
-    categories.value = response.content;
-    pager.value = response;
-    console.log('pager', pager.value.totalPages);
-  } catch (error) {
-    console.error('Lỗi khi fetch category: ', error)
-  }
-}
-
-//Provie
-provide('fetchCategories', fetchCategories);
-
-onMounted(() => {
-  fetchCategories()
-})
-
-const handlePageChange = (newPage: any) =>{
-  pagination.page = newPage -1;
-  fetchCategories();
-}
 
 
-</script>
 
-<style scoped></style>
+<style scoped>
+</style>

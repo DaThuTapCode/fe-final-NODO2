@@ -1,15 +1,9 @@
 <template>
     <el-dialog v-model="dialogVisible" :title="title" @close="handleClose" width="600">
         <hr>
-        <div v-if="(actionContent === 'update' || actionContent === 'view') && categoryUpdate">
-            <CategoryForm   
-            @updateCategory="handleSubmitUpdate"
-            :data="category" 
-            :view-mode="actionContent" 
-            />
-        </div>
+       
 
-        <div v-else-if="actionContent === 'delete'">
+        <div v-if="actionContent === 'delete'">
             <el-alert title="Xóa loại sản phẩm" type="warning" description="Bạn có chắc muốn xóa loại sản phẩm này?"
                 show-icon />
             <div class="dialog-footer">
@@ -22,7 +16,6 @@
 
 <script lang="ts" setup>
 import { CategoryResponse } from '@/type/category/response/CategoryResponse';
-import CategoryForm from './CategoryForm.vue';
 import { ref, defineProps, defineEmits, watch } from 'vue';
 
 // Khai báo các props
@@ -65,11 +58,6 @@ const handleClose = () => {
     emit('update:visibleD', false);
 };
 
-
-const handleSubmitUpdate =(data: any) => {
-    console.log('id', data.id)
-    emit('updateCategory', data);
-}
 
 
 const confirmDelete = () => {

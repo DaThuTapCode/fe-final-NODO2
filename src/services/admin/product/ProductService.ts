@@ -9,6 +9,7 @@ export class ProductService {
     private uriCreateProduct = '/api/product/create';
     private uriUpdateProduct = '/api/product/update';
     private uriDeleteProduct = '/api/product/delete';
+    private uriExportExcel = '/api/excel/products';
 
 
     async getProductList(pagin: PaginationObject, paramSearch: any) {
@@ -16,14 +17,14 @@ export class ProductService {
             LoadingUtil.openLoading(true);
             if (paramSearch !== null && typeof paramSearch === 'string' && paramSearch !== '') {
                 const response = await apiClient.post(`${this.uriGetPageProduct}?${paramSearch}`, pagin);
-                if(response.data.empty === true){
-                    NotificationUtil.openMessageError('Không có sản phẩm nào được tìm thấy!');
+                if (response.data.empty === true) {
+                    // NotificationUtil.openMessageError('Không có sản phẩm nào được tìm thấy!');
                     LoadingUtil.openLoading(false);
                     return response.data;
                 }
                 LoadingUtil.openLoading(false);
                 // alert(paramSearch)
-                NotificationUtil.openMessageSuccess('Tìm thấy sản phẩm');
+                // NotificationUtil.openMessageSuccess('','Tìm thấy sản phẩm');
                 return response.data;
 
             }
@@ -33,56 +34,72 @@ export class ProductService {
             return response.data;
         } catch (error) {
             LoadingUtil.openLoading(false);
-            NotificationUtil.openMessageError('Lỗi khi lấy danh sách sản phẩm');
+            // NotificationUtil.openMessageError('Lỗi khi lấy danh sách sản phẩm');
         }
     }
 
 
 
 
-    async getProductById(id: number) {
+    async getProductById(id: any) {
         try {
             const response = await apiClient.get(`${this.uriGetProductById}/${id}`);
             return response.data;
         } catch (error: any) {
-            NotificationUtil.openMessageError(error.response.data.message);
+            // NotificationUtil.openMessageError(error.response.data.message);
         }
     }
 
     async createNewProduct(data: FormData) {
-        try {
-            const response = await apiClient.post(`${this.uriCreateProduct}`, data);
-            if (response.status === 200) {
-                NotificationUtil.openMessageSuccess(response.data.message);
-                console.log(response);
-            }
-            return response.data;
-        } catch (error: any) {
-            NotificationUtil.openMessageError(error.response.data.message);
-            console.error(error);
-        }
+        return await apiClient.post(`${this.uriCreateProduct}`, data);
     }
 
-    async updateProduct(id: number, data: FormData) {
-        try {
-            const response = await apiClient.put(`${this.uriUpdateProduct}/${id}`, data);
-            if (response.status === 200) {
-                NotificationUtil.openMessageSuccess('Sửa sản phẩm thành công');
-            }
-            return response.data;
-        } catch (error: any) {
-            NotificationUtil.openMessageError(error.response.data.message);
-        }
+
+    async updateProduct(id: any, data: FormData) {
+        return await apiClient.put(`${this.uriUpdateProduct}/${id}`, data);
     }
 
     async deleteProduct(id: number) {
         try {
             const response = await apiClient.put(`${this.uriDeleteProduct}/${id}`);
             if (response.status === 200) {
-                NotificationUtil.openMessageSuccess(response.data.message);
+                NotificationUtil.openMessageSuccess('', response.data.message);
             }
         } catch (error: any) {
-            NotificationUtil.openMessageError(error.response.data.message);
+            // NotificationUtil.openMessageError(error.response.data.message);
         }
     }
+
+    async exportExcel(mode: number, queryString: string) {
+        try {
+
+            let  apiUrl  = ``;
+            if(mode === 1){
+                apiUrl  = `${this.uriExportExcel}/${mode}`;
+            }else {
+                apiUrl  = `${this.uriExportExcel}/${mode}?${queryString}`;
+            }
+
+            const response = await apiClient.get(apiUrl, {
+                responseType: 'blob' // Đặt kiểu phản hồi là blob để nhận file
+            });
+            
+            // Tạo URL từ blob
+            const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const downloadUrl = window.URL.createObjectURL(blob);
+    
+            // Tạo link để tải file
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `exported-file-${mode}.xlsx`; // Tên file khi tải về
+            link.click();
+    
+            // Giải phóng bộ nhớ
+            window.URL.revokeObjectURL(downloadUrl);
+    
+        } catch (error) {
+            // NotificationUtil.openMessageError('Lỗi xuất excel!');
+        }
+    }
+    
 }

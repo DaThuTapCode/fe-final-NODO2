@@ -1,88 +1,3 @@
-<template>
-    <el-form :model="paramSearch">
-        <div class="search-form">
-            <span style="font-size: larger; font-weight: bold; color: green;">Bộ lọc</span>
-            <hr>
-            <el-row :gutter="20">
-                <el-col :span="3">
-                    <span>Tên</span>
-                    <el-form-item>
-                        <el-input v-model="paramSearch.name" placeholder="Nhập tên cần tìm" />
-                    </el-form-item>
-                </el-col>
-
-                <el-col :span="3">
-                    <span>Mã</span>
-                    <el-form-item>
-                        <el-input v-model="paramSearch.productCode" placeholder="Nhập mã cần tìm" />
-                    </el-form-item>
-                </el-col>
-
-                <el-col :span="3">
-                    <span>Ngày bắt đầu</span>
-                    <el-form-item>
-                        <el-date-picker format="DD-MM-YYYY" value-format="DD-MM-YYYY" v-model="paramSearch.startDate"
-                            type="date" placeholder="Chọn ngày bắt đầu" />
-                    </el-form-item>
-                </el-col>
-
-                <el-col :span="3">
-                    <span>Ngày kết thúc</span>
-                    <el-form-item>
-                        <el-date-picker format="DD-MM-YYYY" value-format="DD-MM-YYYY" v-model="paramSearch.endDate"
-                            type="date" placeholder="Chọn ngày kết thúc" />
-                    </el-form-item>
-                </el-col>
-
-                <el-col :span="3">
-                    <span>Loại sản phẩm</span>
-                    <el-select v-model="paramSearch.categoryID" placeholder="Chọn danh mục" filterable>
-                        <el-option v-for="category in categories" :key="category.id" :label="category.name"
-                            :value="category.id">
-                        </el-option>
-                    </el-select>
-                </el-col>
-
-                <el-col :span="3">
-                    <el-form-item>
-                        <div>
-                            <el-button type="success" :icon="Search" round @click="handleSearch">
-                                Tìm kiếm
-                            </el-button>
-                            <el-button type="info"
-                                v-if="paramSearch.name || paramSearch.productCode || paramSearch.categoryID"
-                                :icon="Close" size="small" @click="handleReset">
-                                Hủy lọc
-                            </el-button>
-                        </div>
-                    </el-form-item>
-                </el-col>
-
-                <el-col :span="3">
-                    <el-form-item>
-                        <div>
-                            <el-dropdown>
-                                <el-button :icon="Document" type="primary">
-                                    Xuất excel<el-icon class="el-icon--right"><arrow-down /></el-icon>
-                                </el-button>
-                                <template #dropdown>
-                                    <el-dropdown-menu>
-                                        <el-dropdown-item @click="handleExportExcelAll" :icon="Document">Xuất toàn
-                                            bộ</el-dropdown-item>
-                                        <el-dropdown-item @click="handleExportExcelBySearch">Xuất theo tìm
-                                            kiếm</el-dropdown-item>
-
-                                    </el-dropdown-menu>
-                                </template>
-                            </el-dropdown>
-                        </div>
-                    </el-form-item>
-                </el-col>
-            </el-row>
-        </div>
-    </el-form>
-</template>
-
 <script lang="ts" setup>
 import { ref, defineEmits, reactive, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -92,9 +7,14 @@ import { CategoryResponse } from '@/type/category/response/CategoryResponse';
 import { PaginationObject } from '@/type/util/PaginationObject';
 import { dayjs } from 'element-plus';
 import { NotificationUtil } from '@/util/Notification';
+import { useI18n } from 'vue-i18n';
+import { ProductService } from '@/services/admin/product/ProductService';
+
+const { t } = useI18n();
 
 const categories = ref<CategoryResponse[]>([]); // Hứng dữ liệu danh sách category
 const categoryService = new CategoryService();
+const productService = new ProductService();
 
 // Variable
 const paramSearch = reactive({
@@ -126,24 +46,24 @@ watch(
         // Chỉ gán giá trị cho paramSearch nếu không rỗng và không phải là null
         if (newQuery.startDate && typeof newQuery.startDate === 'string') {
             paramSearch.startDate = newQuery.startDate;
-        } 
+        }
         if (newQuery.endDate && typeof newQuery.endDate === 'string') {
             paramSearch.endDate = newQuery.endDate;
         }
         if (newQuery.name && typeof newQuery.name === 'string') {
             paramSearch.name = newQuery.name;
-        } 
+        }
         if (newQuery.productCode && typeof newQuery.productCode === 'string') {
             paramSearch.productCode = newQuery.productCode;
-        } 
+        }
         if (newQuery.categoryID && typeof newQuery.categoryID === 'string') {
             paramSearch.categoryID = newQuery.categoryID;
-        } 
+        }
     },
     { immediate: true }
 );
 
-
+const hehe = ref('');
 
 // Sự kiện tìm kiếm, đẩy tham số tìm kiếm lên route
 const handleSearch = () => {
@@ -152,7 +72,7 @@ const handleSearch = () => {
     const endDateParsed = dayjs(paramSearch.endDate, 'DD-MM-YYYY');
 
     if (startDateParsed.isAfter(endDateParsed)) {
-        NotificationUtil.openMessageError('Ngày bắt đầu phải trước ngày kết thúc');
+        NotificationUtil.openMessageError(t('error'), t('startDateIsBeforeEndDate'));
         return; // Ngừng thực hiện nếu kiểm tra không thành công
     }
 
@@ -176,6 +96,7 @@ const handleSearch = () => {
         path: '/admin/product/list',
         query: filteredParams
     });
+    hehe.value = queryString;
 
     console.log('ehe', queryString);
     emit('search', queryString);
@@ -205,7 +126,7 @@ const handleExportExcelBySearch = () => {
 // Load dữ liệu danh sách category
 const fetchCategories = async () => {
     try {
-        const response = await categoryService.getPageCategory(pagination);
+        const response = await categoryService.getPageCategory(pagination, '');
         categories.value = response.content;
     } catch (error) {
         console.error('Lỗi fetchCategories trong ProductTable', error);
@@ -218,12 +139,117 @@ const emit = defineEmits<{
 onMounted(() => {
     fetchCategories();
 });
+
+//Xuất excel 
+const handleExportExcel = async (mode: number) => {
+  try {
+    if(mode === 2){
+        if(!hehe.value.length){
+            NotificationUtil.openMessageError(t('error'), '');
+            return;
+        }
+    }
+    await productService.exportExcel(mode, hehe.value);
+    NotificationUtil.openMessageSuccess(t('success'), '');
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 </script>
+
+
+ <template>
+    <el-form :model="paramSearch">
+        <div class="search-form">
+            <el-row :gutter="20">
+                <el-col :span="3">
+                    <el-form-item>
+                        <el-input v-model="paramSearch.name" :placeholder="t('enterNameToSearch')" />
+                    </el-form-item>
+                </el-col>
+
+                <el-col :span="3">
+                    <el-form-item>
+                        <el-input v-model="paramSearch.productCode" :placeholder="t('enterCodeToSearch')" />
+                    </el-form-item>
+                </el-col>
+
+                <el-col :span="3">
+                    <el-form-item>
+                        <el-date-picker format="DD-MM-YYYY" value-format="DD-MM-YYYY" v-model="paramSearch.startDate"
+                            type="date" :placeholder="t('enterStartDate')" />
+                    </el-form-item>
+                </el-col>
+
+                <el-col :span="3">
+                    <el-form-item>
+                        <el-date-picker format="DD-MM-YYYY" value-format="DD-MM-YYYY" v-model="paramSearch.endDate"
+                            type="date" :placeholder="t('enterEndDate')" />
+                    </el-form-item>
+                </el-col>
+
+                <el-col :span="3">
+                    <el-select v-model="paramSearch.categoryID" :placeholder="t('selectCategory')" filterable>
+                        <el-option v-for="category in categories" :key="category.id" :label="category.name"
+                            :value="category.id">
+                        </el-option>
+                    </el-select>
+                </el-col>
+
+                <el-col :span="3">
+                    <el-form-item>
+                        <div>
+                            <el-button type="success" :icon="Search" round @click="handleSearch">
+                                {{ t('search') }}
+                            </el-button>
+                            <el-button type="info"
+                                v-if="hehe.length > 0"
+                                :icon="Close" size="small" @click="handleReset">
+                                {{ t('cancelFilter') }}
+                            </el-button>
+                        </div>
+                    </el-form-item>
+                </el-col>
+
+                <el-col :span="3">
+                    <el-form-item>
+                        <div>
+                            <el-dropdown>
+                                <el-button :icon="Document" type="primary">
+                                    {{ t('exportExcel') }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
+                                </el-button>
+                                <template #dropdown>
+                                    <el-dropdown-menu>
+                                        <el-dropdown-item @click="handleExportExcel(1)" :icon="Document">
+                                            {{ t('exportAll') }}
+                                        </el-dropdown-item>
+                                        <el-dropdown-item :disabled="hehe.length < 0" @click="handleExportExcel(2)">
+                                            {{ t('exportToSearch') }}
+                                        </el-dropdown-item>
+
+                                    </el-dropdown-menu>
+                                </template>
+                            </el-dropdown>
+                        </div>
+                    </el-form-item>
+                </el-col>
+                
+                <el-col :span="3">
+                    <router-link :to="{ name: 'CreateProductForm' }">  <el-button type="primary">+ {{ t('createNew') }}</el-button></router-link>
+                </el-col>
+            </el-row>
+        </div>
+    </el-form>
+</template>
+
+
 
 <style scoped>
 .search-form {
     background-color: #f9f9f9;
-    padding: 20px;
+    padding-top: 20px;
+    padding-left: 20px;
     border-radius: 5px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }

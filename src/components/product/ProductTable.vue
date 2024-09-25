@@ -1,35 +1,3 @@
-<template>
-  <ProductFormSearch @search="handleSearchFetchProduct"/>
-  <h1>Danh sách sản phẩm</h1>
-  <!-- Phân trang -->
-  <div v-if="pager.totalPages" style="margin-bottom: 20px;">
-    <el-pagination background layout="pager" :total="pager.totalElements" :page-size="pager.size"
-      @current-change="handlePageChange" />
-  </div>
-  <!-- Bảng -->
-  <el-table v-if="products" :data="products" style="width: 100%" :row-key="(row: ProductSearchResponse) => row.id">
-    <el-table-column fixed prop="img" label="Ảnh" width="120">
-      <template #default="{ row }">
-        <img :src="row.img" :alt="row.name" style="width: 50%; max-height: 50px; border-radius: 10px">
-      </template>
-    </el-table-column>
-    <el-table-column prop="productCode" label="Mã sản phẩm" width="120" />
-    <el-table-column prop="name" label="Name" width="160" />
-    <el-table-column prop="description" label="Mô tả" width="120" />
-    <el-table-column prop="categories" label="Loại sản phẩm" width="120" />
-    <el-table-column prop="price" label="Giá" width="120" />
-    <el-table-column prop="createdDate" label="Ngày tạo" width="160" />
-    <el-table-column prop="createdBy" label="Người tạo" width="120" />
-    <el-table-column prop="modifiedDate" label="Ngày sửa cuối" width="160" />
-    <el-table-column prop="modifiedBy" label="Người sửa cuối" width="120" />
-    <el-table-column fixed="right" label="Operations" min-width="150">
-      <template #default="{ row }">
-        <ProductAction :product="row" @delete="deleteProduct"/>
-      </template>
-    </el-table-column>
-  </el-table>
-</template>
-
 <script lang="ts" setup>
 import { ProductService } from '@/services/admin/product/ProductService';
 import { ProductSearchResponse } from '@/type/product/response/ProductSearchResponse';
@@ -38,6 +6,9 @@ import { nextTick, onMounted, provide, ref, watch } from 'vue';
 import ProductAction from './ProductAction.vue';
 import ProductFormSearch from './ProductFormSearch.vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+
 //Service
 const productService = new ProductService();
 
@@ -49,7 +20,7 @@ const pager = ref<any>({}); // Hứng dữ liệu phân trang
 //Chứa dữ liệu phân trang
 const pagination = ref<PaginationObject>({
   page: 0,
-  size: 2,
+  size: 5,
   sortBy: null,
   direction: null
 });
@@ -116,11 +87,15 @@ const handleSearchFetchProduct = async (dataSearch: any) => {
   fetchProduct(pagination.value, dataSearch);
 };
 
-
-
 //Đổi trang
 const handlePageChange = (newPage: any) => {
   pagination.value.page = newPage - 1;
+  fetchProduct(pagination.value, paramsSearchQuery.value);
+}
+
+//tăng só phần tử trên 1 trang
+const handleSizeChange = (newSize: any) => {
+  pagination.value.size = newSize;
   fetchProduct(pagination.value, paramsSearchQuery.value);
 }
 
@@ -129,3 +104,123 @@ onMounted(() => {
 })
 
 </script>
+
+<template>
+  <ProductFormSearch @search="handleSearchFetchProduct" />
+  <p>{{ t('productList') }}</p>
+
+  <!-- Bảng -->
+  <el-table
+    v-if="products"
+    :data="products"
+    height="410"
+    style="width: 100%; border-radius: 10px; overflow: hidden;"
+    :row-key="(row: ProductSearchResponse) => row.id"
+    stripe
+    highlight-current-row
+  >
+    <!-- Ảnh -->
+    <el-table-column fixed prop="img" :label="t('image')" width="120">
+      <template #default="{ row }">
+        <img
+          v-if="row.img !== null"
+          :src="row.img"
+          :alt="row.name"
+          style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px"
+        />
+        <img
+          v-if="row.img === null"
+          src="/noimage.png"
+          :alt="row.name"
+          style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px"
+        />
+      </template>
+    </el-table-column>
+
+    <!-- Mã -->
+    <el-table-column prop="productCode" :label="t('code')" width="120" />
+
+    <!-- Tên -->
+    <el-table-column prop="name" :label="t('name')" width="180" />
+
+    <!-- Mô tả -->
+    <el-table-column prop="description" :label="t('description')" width="200" />
+
+    <!-- Danh mục -->
+    <el-table-column prop="categories" :label="t('category')" width="150" />
+
+    <!-- Giá -->
+    <el-table-column prop="price" :label="t('price')" width="120" />
+
+    <!-- Ngày sửa -->
+    <el-table-column prop="modifiedDate" :label="t('modifiedDate')" width="160" />
+
+    <!-- Người sửa -->
+    <el-table-column prop="modifiedBy" :label="t('modifiedBy')" width="120" />
+
+    <!-- Ngày tạo -->
+    <el-table-column prop="createdDate" :label="t('createdDate')" width="160" />
+
+    <!-- Người tạo -->
+    <el-table-column prop="createdBy" :label="t('createdBy')" width="120" />
+
+    <!-- Trạng thái -->
+    <el-table-column prop="status" :label="t('status')" width="120">
+      <template v-slot="{ row }">
+        <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'danger'">
+          {{ t(row.status) }}
+        </el-tag>
+      </template>
+    </el-table-column>
+
+    <!-- Hành động -->
+    <el-table-column fixed="right" :label="t('action')" min-width="150">
+      <template #default="{ row }">
+        <ProductAction :product="row" @delete="deleteProduct" />
+      </template>
+    </el-table-column>
+  </el-table>
+
+  <!-- Phân trang -->
+  <div class="demo-pagination-block" style="float: right; margin: 10px;">
+    <el-pagination
+      v-model:current-page="pager.page"
+      v-model:page-size="pager.size"
+      :page-sizes="[5, 10, 20, 50]"
+      :size="'default'"
+      :background="true"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="pager.totalElements"
+      @size-change="handleSizeChange"
+      @current-change="handlePageChange"
+    />
+  </div>
+</template>
+
+<style scoped>
+.el-table {
+  background-color: #f5f7fa;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.el-table th {
+  background-color: #2a3650;
+  color: white;
+  font-weight: bold;
+}
+
+.el-table td {
+  padding: 12px;
+  color: #333;
+}
+
+.el-table__body-wrapper {
+  border-radius: 8px;
+}
+
+.demo-pagination-block {
+  display: flex;
+  justify-content: flex-end;
+}
+</style>

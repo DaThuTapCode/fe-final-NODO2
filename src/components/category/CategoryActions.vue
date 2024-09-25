@@ -1,14 +1,15 @@
 <script lang="ts" setup>
 import { Edit, Delete, View } from '@element-plus/icons-vue'
 import CategoryDialog from './CategoryDialog.vue';
-import { ref, defineProps, defineEmits, inject } from 'vue';
+import { ref, defineProps, defineEmits, onMounted } from 'vue';
 import { CategoryResponse } from '@/type/category/response/CategoryResponse';
 import { CategoryService } from '@/services/admin/category/CategoryService';
-import { NotificationUtil } from '@/util/Notification';
+import CategoryForm from './CategoryForm.vue';
+import { useI18n } from 'vue-i18n';
+const { t }  = useI18n();
 const props = defineProps<{
     idCategory: number
 }>();
-
 
 const isModalVisible = ref(false);
 const modalTitle = ref('');
@@ -16,20 +17,45 @@ const modalAction = ref('');
 const category = ref<CategoryResponse>();
 const categoryService = new CategoryService();
 
-const handleView = () => {
-    fetchCategoryById(props.idCategory);
-    modalTitle.value = 'Chi tiết danh mục';
-    isModalVisible.value = true;
-    modalAction.value = 'view';
-    console.log('Handle View');
+const emit = defineEmits<{
+    (e: 'deleted', id: any): void,
+    (e: 'openTab', dataTab: any, categoryId: number): void
+}>();
+
+const handleView = async () => {
+   await fetchCategoryById(props.idCategory);
+    const data = category.value;
+    const viewMode = 'view'
+    const dataTab = {
+        title: t('detail') + data?.categoryCode,
+        name: '3',
+        components: [
+            {
+                component: CategoryForm,
+                props: { data, viewMode },
+                emits: [],
+            }
+        ],
+    };
+    emit('openTab', dataTab, props.idCategory);
 }
 
-const handleUpdate = () => {
-    fetchCategoryById(props.idCategory);
-    modalTitle.value = 'Chỉnh sửa danh mục';
-    isModalVisible.value = true;
-    modalAction.value = 'update';
-    console.log('Handle Update');
+const handleUpdate = async () => {
+    await  fetchCategoryById(props.idCategory);
+    const data = category.value;
+    const viewMode = 'update'
+    const dataTab = {
+        title: t('update') + data?.categoryCode,
+        name: '4',
+        components: [
+            {
+                component: CategoryForm,
+                props: { data, viewMode },
+                emits: [],
+            }
+        ],
+    };
+    emit('openTab', dataTab, props.idCategory);
 }
 
 const handleDelete = () => {
@@ -38,34 +64,12 @@ const handleDelete = () => {
     modalAction.value = 'delete';
 }
 
-const emit = defineEmits<{
-    (e: 'deleted'): void
-}>();
+
 
 const handleConfirmDelete = async () => {
-    try {
-        const response = await categoryService.deleteCategory(props.idCategory);
-        if (response?.status === 204) {
-            NotificationUtil.openMessageSuccess('Xóa thành công loại sản phẩm!');
-            emit('deleted');
-        }
-    } catch (error) {
-        console.error('Lỗi xóa category: ', error);
-    }
+    emit('deleted', props.idCategory);
 }
-const fetchCategories = inject<() => void>('fetchCategories');
 
-// Gọi api update category
-const callUpdateCategory = async (data: any) => {
-    try {
-        await categoryService.updateCategory(data.id, data.value);
-        if (fetchCategories) {
-            fetchCategories(); // Gọi hàm fetchCategories để tải lại danh sách danh mục
-        }
-    } catch (error) {
-        console.error('Lỗi update category: ', error);
-    }
-}
 
 const fetchCategoryById = async (id: number) => {
     try {
@@ -76,6 +80,9 @@ const fetchCategoryById = async (id: number) => {
     }
 }
 
+onMounted(() => {
+    // fetchCategoryById(props.idCategory);
+})
 
 </script>
 
@@ -83,13 +90,13 @@ const fetchCategoryById = async (id: number) => {
     <teleport to="body">
         <CategoryDialog :title="modalTitle" :visibleD="isModalVisible" :action="modalAction" :category="category"
             @update:visibleD="isModalVisible = $event" @delete="handleConfirmDelete"
-            @updateCategory="callUpdateCategory">
+            >
         </CategoryDialog>
     </teleport>
     <div>
         <el-button type="primary" :icon="View" circle size="normal" @click="handleView" />
         <el-button type="success" :icon="Edit" circle size="normal" @click="handleUpdate" />
-        <el-button type="danger" :icon="Delete" circle size="normal" @click="handleDelete" />
+        <el-button type="" :icon="Delete" circle size="normal" @click="handleDelete" />
     </div>
 </template>
 <style></style>

@@ -15,6 +15,7 @@ export class CategoryService {
     private uriCreateCategory = '/api/category/create';
     
     private uriExportExcel = "/api/excel/categories"
+    
 
     async getCategoryById(id: number): Promise<CategoryResponse> {
         try {
@@ -26,9 +27,14 @@ export class CategoryService {
         }
     }
 
-    async getPageCategory(pagination: PaginationObject) {
+    async getPageCategory(pagination: PaginationObject, queryString: string) {
         try {
+            if(queryString.length > 0) {
+                const response = await apiClient.post(`${this.uriGetPageCategory}?${queryString}`, pagination);
+                return response.data;
+            }
             const response = await apiClient.post(`${this.uriGetPageCategory}`, pagination);
+            console.log(response.data);
             return response.data;
         } catch (error) {
             console.error('Lỗi khi lấy category');
@@ -60,21 +66,29 @@ export class CategoryService {
             LoadingUtil.openLoading(true);
             const response = await apiClient.post(`${this.uriCreateCategory}`, data);
             if(response.status === 200) {
-                NotificationUtil.openMessageSuccess('Thêm thành công loại sản phẩm mới!');
                 LoadingUtil.openLoading(false);
             }
+            LoadingUtil.openLoading(false);
             return response;
         } catch (error: any) {
-            NotificationUtil.openMessageError(error.response.data.message);
             console.error('Lỗi khi thêm category: ', error);
             LoadingUtil.openLoading(false);
+            throw error;
             // throw error;
         }
     }
 
-    async exportExcel(mode: number) {
+    async exportExcel(mode: number, queryString: string) {
         try {
-            const response = await apiClient.get(`${this.uriExportExcel}/${mode}`, {
+
+            let  apiUrl  = ``;
+            if(mode === 1){
+                apiUrl  = `${this.uriExportExcel}/${mode}`;
+            }else {
+                apiUrl  = `${this.uriExportExcel}/${mode}?${queryString}`;
+            }
+
+            const response = await apiClient.get(apiUrl, {
                 responseType: 'blob' // Đặt kiểu phản hồi là blob để nhận file
             });
             
@@ -91,9 +105,8 @@ export class CategoryService {
             // Giải phóng bộ nhớ
             window.URL.revokeObjectURL(downloadUrl);
     
-            NotificationUtil.openMessageSuccess('Xuất excel thành công');
         } catch (error) {
-            NotificationUtil.openMessageError('Lỗi xuất excel!');
+            // NotificationUtil.openMessageError('Lỗi xuất excel!');
         }
     }
     

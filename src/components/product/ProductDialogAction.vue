@@ -53,7 +53,7 @@ const handleClose = () => {
   <el-dialog
     v-model="isVisible"
     :title="titleDialog"
-    width="800"
+    width="1500"
     @close="handleClose"
   >
   <hr>
