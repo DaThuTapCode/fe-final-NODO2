@@ -1,9 +1,7 @@
-import CategoryCreate from "@/components/category/CategoryCreate.vue";
-import CategoryTable from "@/components/category/CategoryTable.vue";
 import ProductCreate from "@/components/product/ProductCreate.vue";
-import ProductForm from "@/components/product/ProductForm.vue";
 import ProductTable from "@/components/product/ProductTable.vue";
 import ProductUpdate from "@/components/product/ProductUpdate.vue";
+import ProductViewDetail from "@/components/product/ProductViewDetail.vue";
 import AdminView from "@/views/AdminView.vue";
 import CategoryView from "@/views/Category/CategoryView.vue";
 import ProductView from "@/views/Product/ProductView.vue";
@@ -21,6 +19,7 @@ const routes: Array<RouteRecordRaw> = [
                     {path: 'list', component: ProductTable, name: 'ListProduct'},
                     {path: 'create', component: ProductCreate, name: 'CreateProductForm'},
                     {path: 'update/:id', component: ProductUpdate},
+                    {path: 'view/:id', component: ProductViewDetail},
                 ]
             },
             {

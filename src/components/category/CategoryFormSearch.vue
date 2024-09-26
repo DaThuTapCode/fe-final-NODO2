@@ -44,7 +44,7 @@ const handleOpenTabAddCategory = () => {
   emit('openTabAddCategory', dataTab);
 }
 
-const handleExportExcel = (mode: number, ) => {
+const handleExportExcel = (mode: number,) => {
   emit('exportExcelCategory', mode);
 };
 
@@ -108,46 +108,45 @@ const handleSearch = () => {
       <el-row :gutter="20">
         <el-col :span="3">
           <el-form-item>
-            <el-input v-model="paramSearch.name" :placeholder="t('enterNameToSearch')" />
+            <el-input class="input-control" v-model="paramSearch.name" :placeholder="t('enterNameToSearch')" />
           </el-form-item>
         </el-col>
 
         <el-col :span="3">
           <el-form-item>
-            <el-input v-model="paramSearch.categoryCode" :placeholder="t('enterCodeToSearch')" />
+            <el-input class="input-control" v-model="paramSearch.categoryCode" :placeholder="t('enterCodeToSearch')" />
           </el-form-item>
         </el-col>
 
         <el-col :span="3">
           <el-form-item>
-            <el-date-picker v-model="paramSearch.startDate" format="DD-MM-YYYY" value-format="DD-MM-YYYY" type="date"
-              :placeholder="t('enterStartDate')" />
+            <el-date-picker  class="input-control" v-model="paramSearch.startDate" format="DD-MM-YYYY"
+              value-format="DD-MM-YYYY" type="date" :placeholder="t('enterStartDate')" />
           </el-form-item>
         </el-col>
 
         <el-col :span="3">
           <el-form-item>
-            <el-date-picker v-model="paramSearch.endDate" format="DD-MM-YYYY" value-format="DD-MM-YYYY" type="date"
-              :placeholder="t('enterEndDate')" />
+            <el-date-picker class="input-control" v-model="paramSearch.endDate" format="DD-MM-YYYY"
+              value-format="DD-MM-YYYY" type="date" :placeholder="t('enterEndDate')" />
           </el-form-item>
         </el-col>
 
-        <el-col :span="3">
-          <el-form-item>
-            <div>
-              <el-button type="success" :icon="Search" round @click="handleSearch">
+        <e-row>
+          <el-col :span="4">
+            <el-form-item>
+              <el-button size="small" class="input-control" type="success" :icon="Search" round @click="handleSearch">
                 {{ t('search') }}
               </el-button>
-            </div>
-          </el-form-item>
-        </el-col>
+            </el-form-item>
+          </el-col>
+        </e-row>
 
-
-        <el-col :span="3">
-          <el-form-item>
-            <div>
+        <e-row>
+          <el-col :span="5">
+            <el-form-item>
               <el-dropdown>
-                <el-button :icon="Document" type="primary">
+                <el-button size="small" class="input-control" :icon="Document" type="primary">
                   {{ t('exportExcel') }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
                 </el-button>
                 <template #dropdown>
@@ -161,33 +160,39 @@ const handleSearch = () => {
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
-            </div>
-          </el-form-item>
-        </el-col>
+            </el-form-item>
+          </el-col>
+        </e-row>
 
-        <el-col :span="3">
-          <el-form-item>
-            <div>
-              <el-button @click="handleOpenTabAddCategory" type="primary"> + {{ t('createNewCategory') }}</el-button>
-            </div>
-          </el-form-item>
-        </el-col>
+        <e-row>
+          <el-col :span="4">
+            <el-form-item>
+              <el-button size="small" class="input-control" @click="handleOpenTabAddCategory" type="primary"> + {{
+                t('createNewCategory') }}</el-button>
+            </el-form-item>
+          </el-col>
+        </e-row>
       </el-row>
-
     </div>
-
   </el-form>
-
 </template>
 
 
 
-<style scoped>
-.search-form {
+<style>
+.input-control {
+  font-size: smaller;
+}
+
+/* .search-form {
   background-color: #f9f9f9;
   padding: 10px;
   margin-bottom: 5px;
   border-radius: 5px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
+} */
+/* .el-input__inner{
+  font-size: smaller;
+
+} */
 </style>

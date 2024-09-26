@@ -16,6 +16,8 @@
     footer {
         /* background-color: lightgray; */
         text-align: center;
+        /* height: fit-content;
+        width: fit-content; */
         /* line-height: 60px; */
     }
 </style>

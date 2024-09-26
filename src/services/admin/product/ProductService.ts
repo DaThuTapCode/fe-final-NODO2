@@ -60,14 +60,7 @@ export class ProductService {
     }
 
     async deleteProduct(id: number) {
-        try {
-            const response = await apiClient.put(`${this.uriDeleteProduct}/${id}`);
-            if (response.status === 200) {
-                NotificationUtil.openMessageSuccess('', response.data.message);
-            }
-        } catch (error: any) {
-            // NotificationUtil.openMessageError(error.response.data.message);
-        }
+            return  await apiClient.put(`${this.uriDeleteProduct}/${id}`);
     }
 
     async exportExcel(mode: number, queryString: string) {

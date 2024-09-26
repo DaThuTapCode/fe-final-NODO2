@@ -11,8 +11,6 @@ const props = defineProps<{
 }>();
 const product = ref(props.product);
 
-const getProductById = inject<(id: number) => Promise<any>>('getProductById');
-
 const dialogVisible = ref(false);
 
 const dialogType = ref<'view' | 'update' | 'delete'>('view');
@@ -22,10 +20,11 @@ const handleAction = async (type: 'view' | 'update' | 'delete') => {
     dialogType.value = type;
     dialogVisible.value = true;
     if (type === 'view') {
-        if (getProductById) {
-            product.value = await getProductById(product.value.id);
-        }
-        dialogTitle.value = 'Xem chi tiết sản phẩm';
+        // if (getProductById) {
+        //     product.value = await getProductById(product.value.id);
+        // }
+        // dialogTitle.value = 'Xem chi tiết sản phẩm';
+        router.push({ path: `/admin/product/view/${product.value.id}` });
     } else if (type === 'update') {
         router.push({ path: `/admin/product/update/${product.value.id}` });
     } else {

@@ -19,7 +19,7 @@ const handleFileChange = (file: any) => {
 
     if (file) {
         const selectedFile = file.raw;
-        
+
         // Kiểm tra kích thước file
         if (selectedFile.size > maxSize) {
             console.error('Kích thước file quá lớn');
@@ -44,8 +44,8 @@ const handleFileChange = (file: any) => {
     }
 };
 
-onMounted (() => {
-    previewImage.value =  dataC.value.img;
+onMounted(() => {
+    previewImage.value = null; 
 })
 
 // Hàm xử lý xóa file đã chọn
@@ -69,7 +69,8 @@ const rules = computed(() => ({
         { required: true, message: t('codeRequired'), trigger: 'change' },
         { min: 10, max: 10, message: t('codeLengthIs10'), trigger: 'change' },
         {
-      pattern: /^[a-zA-Z0-9]+$/, message: t('codeNumbersOnly'),trigger: 'change'}
+            pattern: /^[a-zA-Z0-9]+$/, message: t('codeNumbersOnly'), trigger: 'change'
+        }
     ],
     name: [
         { required: true, message: t('nameRequired'), trigger: 'change' },
@@ -83,6 +84,7 @@ const rules = computed(() => ({
 
 const emit = defineEmits<{
     (e: 'createCategory', value: FormData): void,
+    (e: 'backTabOne'): void,
     (e: 'updateCategory', value: any): void
 }>();
 
@@ -131,6 +133,18 @@ const handleSubmitUpdate = () => {
     });
 }
 
+const getImageU = (img: any) => {
+    if(previewImage.value !== null && previewImage.value !== undefined){
+        return previewImage.value;
+    }else if(img !== null) {
+        return img;
+    }else {
+        return '/noimage.png';
+    }
+}
+const handleBackTabOne =() => {
+    emit('backTabOne');
+}
 const dataC = ref(props.data);
 </script>
 
@@ -142,9 +156,7 @@ const dataC = ref(props.data);
                 <div>
                     <!-- Ảnh mode update | view-->
                     <div v-if="viewMode != 'create'" style="display: flex; justify-content: center; ">
-                        <!-- <img v-if="dataC.img === null || dataC.img === undefined" src="/noimage.png" alt="haha"
-                            class="image-view" /> -->
-                        <img  :src="previewImage" class="image-view" />
+                        <img :src="getImageU(dataC.img)" class="image-view" />
                     </div>
 
                     <!-- Ảnh mode tạo mới-->
@@ -179,35 +191,69 @@ const dataC = ref(props.data);
 
             </el-col>
             <el-col :span="14" style="background-color: white; padding: 20px;">
-                <el-form-item prop="categoryCode" :label="t('categoryCode')">
-                    <el-input maxlength="10" show-word-limit v-model="dataC.categoryCode" limit="10"
-                        :disabled="viewMode === 'view' || viewMode === 'update'" />
-                </el-form-item>
 
-                <el-form-item prop="name" :label="t('name')">
-                    <el-input maxlength="255" show-word-limit v-model="dataC.name" :disabled="viewMode === 'view'" />
-                </el-form-item>
+                <el-row>
+                    <el-col :span="11">
+                        <el-form-item prop="categoryCode" :label="t('categoryCode')">
+                            <el-input size="small" maxlength="10" show-word-limit v-model="dataC.categoryCode" limit="10"
+                                :disabled="viewMode === 'view' || viewMode === 'update'" />
+                        </el-form-item>
+
+                    </el-col>
+                    <el-col :span="1">
+
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item prop="name" :label="t('name')">
+                            <el-input size="small" maxlength="255" show-word-limit v-model="dataC.name"
+                                :disabled="viewMode === 'view'" />
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+
+
 
                 <el-form-item prop="description" :label="t('description')">
-                    <el-input maxlength="255" show-word-limit type="textarea" v-model="dataC.description"
+                    <el-input size="small" maxlength="255" show-word-limit type="textarea" v-model="dataC.description"
                         :disabled="viewMode === 'view'" />
                 </el-form-item>
 
-                <el-form-item v-if="viewMode === 'view'" :label="t('createdDate')">
-                    <el-input v-model="dataC.createdDate" :disabled="viewMode === 'view'" />
-                </el-form-item>
+                <el-row>
 
-                <el-form-item v-if="viewMode === 'view'" :label="t('modifiedDate')">
-                    <el-input v-model="dataC.modifiedDate" :disabled="viewMode === 'view'" />
-                </el-form-item>
+                    <el-col :span="11">
+                        <el-form-item v-if="viewMode === 'view'" :label="t('createdDate')">
+                            <el-input size="small" v-model="dataC.createdDate" :disabled="viewMode === 'view'" />
+                        </el-form-item>
 
-                <el-form-item v-if="viewMode === 'view'" :label="t('createdBy')">
-                    <el-input v-model="dataC.createdBy" :disabled="viewMode === 'view'" />
-                </el-form-item>
+                    </el-col>
+                    <el-col :span="1">
 
-                <el-form-item v-if="viewMode === 'view'" :label="t('modifiedBy')">
-                    <el-input v-model="dataC.modifiedBy" :disabled="viewMode === 'view'" />
-                </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item v-if="viewMode === 'view'" :label="t('modifiedDate')">
+                            <el-input size="small" v-model="dataC.modifiedDate" :disabled="viewMode === 'view'" />
+                        </el-form-item>
+                    </el-col>
+
+                </el-row>
+                <el-row>
+
+                    <el-col :span="11">
+                        <el-form-item v-if="viewMode === 'view'" :label="t('createdBy')">
+                            <el-input size="small" v-model="dataC.createdBy" :disabled="viewMode === 'view'" />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="1">
+
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item v-if="viewMode === 'view'" :label="t('modifiedBy')">
+                            <el-input size="small" v-model="dataC.modifiedBy" :disabled="viewMode === 'view'" />
+                        </el-form-item>
+                    </el-col>
+
+                </el-row>
+
 
                 <!-- Nút mode update -->
                 <div v-if="viewMode === 'update'" style="display: flex; justify-content: right;">
@@ -219,22 +265,22 @@ const dataC = ref(props.data);
                     <!-- <el-button  @click="handleSubmitCreate" type="info">{{ t('back') }}</el-button> -->
                     <el-button @click="handleSubmitCreate" type="primary">{{ t('save') }}</el-button>
                 </div>
+                <el-button style="float: right; margin-top: 5px" @click="handleBackTabOne" size="small" type="info">{{ t('back') }}</el-button>
             </el-col>
         </el-row>
     </el-form>
 </template>
 <style scoped>
 .image-view {
-    border-radius: 50%;
-    max-width: 40%;
-    min-width: 40%;
-    max-height: 150px;
-    min-height: 150px;
-    margin: 30px;
-    cursor: pointer;
+  border-radius: 50%;
+  border: solid 1px lightgray;
+  width: 100px; /* Kích thước cố định cho chiều rộng */
+  height: 100px; /* Kích thước cố định cho chiều cao */
+  margin: 30px;
+  cursor: pointer;
 }
 
 .zone-info p {
-    font-size: small;
+    font-size: x-small;
 }
 </style>

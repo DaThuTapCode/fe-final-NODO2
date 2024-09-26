@@ -89,40 +89,51 @@ watch(locale, () => {
     if (tab.name === '2') {
       tab.title = t('createNewCategory'); // Dịch lại tiêu đề
     }
-    if (tab.name === '3') {
-      tab.title = t('detail'); // Dịch lại tiêu đề
+    // if (tab.name === '3') {
+    //   tab.title = t('detail'); // Dịch lại tiêu đề
+    // }
+    // if (tab.name === '4') {
+    //   tab.title = t('update'); // Dịch lại tiêu đề
+    // }
+    if(tab.title === 'Update' || tab.title === 'Chỉnh sửa'){
+        tab.title = t('update');
     }
-    if (tab.name === '4') {
-      tab.title = t('update'); // Dịch lại tiêu đề
+    if(tab.title === 'Chi tiết' || tab.title === 'Detail'){
+        tab.title = t('detail');
     }
   });
 });
 // Hàm thêm tab mới
-const addTab = (tabData: { title: string; name: string, components: any[] }) => {
-    // Kiểm tra xem tab với tiêu đề đã tồn tại hay chưa
-    const existingTab = editableTabs.value.find(tab => tab.title === tabData.title);
-    // editableTabs.value.find(tab => {
-    //     if(tab.name === tabData.name){
-    //         removeTab(tab.name)
-    //     }
-    // });
+const addTab = (tabData: { title: string; name: string; components: any[] }) => {
+  // Kiểm tra xem tab với tên đã tồn tại hay chưa
+  const existingTabIndex = editableTabs.value.findIndex(tab => tab.name === tabData.name);
 
-    if (existingTab) {
-        // Nếu tab đã tồn tại, chuyển đến tab đó
-        editableTabsValue.value = existingTab.name;
-    } else {
-        // Nếu chưa tồn tại, thêm tab mới
-        const newTabName = `${++tabIndex}`;
-        // const newTabName = `${tabData.name}`;
-        editableTabs.value.push({
-            title: tabData.title,
-            name: newTabName,
-            components: tabData.components, // Mảng chứa nhiều component
-        });
-        editableTabsValue.value = newTabName; // Chuyển đến tab mới tạo
-    }
+  if (existingTabIndex !== -1) {
+    // Nếu tồn tại tab, thì xóa tab cũ trước khi thêm tab mới
+    removeTab(tabData.name);
+  }
+
+  // Sử dụng một giá trị duy nhất cho tên tab mới (có thể dùng timestamp hoặc id tự tăng)
+  let uniqueTabName = `${tabData.name}-${new Date().getTime()}`; // Đảm bảo mỗi tab có tên duy nhất
+if(tabData.name === '2'){
+    uniqueTabName = tabData.name;
+}
+  // Thêm tab mới vào mảng editableTabs
+  editableTabs.value.push({
+    title: tabData.title,
+    name: uniqueTabName, // Tên tab duy nhất
+    components: tabData.components, // Mảng chứa nhiều component
+  });
+
+  // Chuyển đến tab mới tạo
+  editableTabsValue.value = uniqueTabName;
 };
 
+
+//Back
+const backTabOne = () => {
+    editableTabsValue.value = '1';
+}
 
 // Hàm xóa tab
 const removeTab = (targetName: string) => {
@@ -251,7 +262,8 @@ onMounted(() => {
                     'searchCategory': handleSearchCategory,
                     'deleted': handleDeleted,
                     'updateCategory': handleUpdateCategory,
-                    'exportExcelCategory': handleExportExcel
+                    'exportExcelCategory': handleExportExcel,
+                    'backTabOne': backTabOne
                 }" />
             </div>
         </el-tab-pane>

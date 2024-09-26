@@ -27,7 +27,7 @@ const handleView = async () => {
     const data = category.value;
     const viewMode = 'view'
     const dataTab = {
-        title: t('detail') + data?.categoryCode,
+        title: t('detail'),
         name: '3',
         components: [
             {
@@ -45,7 +45,7 @@ const handleUpdate = async () => {
     const data = category.value;
     const viewMode = 'update'
     const dataTab = {
-        title: t('update') + data?.categoryCode,
+        title: t('update'),
         name: '4',
         components: [
             {

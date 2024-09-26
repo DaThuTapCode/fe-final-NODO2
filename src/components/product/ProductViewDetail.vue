@@ -1,0 +1,44 @@
+<script lang="ts" setup>
+import { onMounted, provide, ref } from 'vue';
+import ProductForm from './ProductForm.vue';
+import { ProductService } from '@/services/admin/product/ProductService';
+import { useRoute } from 'vue-router';
+import { NotificationUtil } from '@/util/Notification';
+import { useI18n } from 'vue-i18n';
+const productService = new ProductService;
+const { t } = useI18n();
+const productD = ref<any>(null); // Khởi tạo giá trị null để biểu thị dữ liệu chưa được tải
+const route = useRoute();
+const id = route.params.id;
+
+// Lấy sản phẩm theo id
+const getProductById = async () => {
+  try {
+    const response = await productService.getProductById(id);
+    productD.value = response; 
+  } catch (error) {
+    console.error('Lỗi khi lấy sản phẩm theo id: ', error);
+  }
+}
+
+onMounted(() => {
+  getProductById();
+});
+</script>
+
+<template>
+  <div class="container">
+    <div class="form-zone">
+      <ProductForm v-if="productD" :data-product="productD" :view-mode="'view'" />
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.container {
+  justify-content: center;
+}
+.form-zone {
+  max-width: 800px;
+}
+</style>

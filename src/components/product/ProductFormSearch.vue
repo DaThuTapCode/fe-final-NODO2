@@ -142,30 +142,30 @@ onMounted(() => {
 
 //Xuất excel 
 const handleExportExcel = async (mode: number) => {
-  try {
-    if(mode === 2){
-        if(!hehe.value.length){
-            NotificationUtil.openMessageError(t('error'), '');
-            return;
+    try {
+        if (mode === 2) {
+            if (!hehe.value.length) {
+                NotificationUtil.openMessageError(t('error'), '');
+                return;
+            }
         }
+        await productService.exportExcel(mode, hehe.value);
+        NotificationUtil.openMessageSuccess(t('success'), '');
+    } catch (error) {
+        console.error(error);
     }
-    await productService.exportExcel(mode, hehe.value);
-    NotificationUtil.openMessageSuccess(t('success'), '');
-  } catch (error) {
-    console.error(error);
-  }
 }
 
 </script>
 
 
- <template>
+<template>
     <el-form :model="paramSearch">
         <div class="search-form">
-            <el-row :gutter="20">
+            <el-row :gutter="20" >
                 <el-col :span="3">
                     <el-form-item>
-                        <el-input v-model="paramSearch.name" :placeholder="t('enterNameToSearch')" />
+                        <el-input  v-model="paramSearch.name" :placeholder="t('enterNameToSearch')" />
                     </el-form-item>
                 </el-col>
 
@@ -197,47 +197,56 @@ const handleExportExcel = async (mode: number) => {
                     </el-select>
                 </el-col>
 
-                <el-col :span="3">
-                    <el-form-item>
-                        <div>
-                            <el-button type="success" :icon="Search" round @click="handleSearch">
-                                {{ t('search') }}
-                            </el-button>
-                            <el-button type="info"
-                                v-if="hehe.length > 0"
-                                :icon="Close" size="small" @click="handleReset">
-                                {{ t('cancelFilter') }}
-                            </el-button>
-                        </div>
-                    </el-form-item>
-                </el-col>
-
-                <el-col :span="3">
-                    <el-form-item>
-                        <div>
-                            <el-dropdown>
-                                <el-button :icon="Document" type="primary">
-                                    {{ t('exportExcel') }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
+                <el-row  style="margin-left: 10px;">
+                    <el-col :span="3">
+                        <el-form-item>
+                            <div>
+                                <el-button type="success" :icon="Search" round @click="handleSearch">
+                                    {{ t('search') }}
                                 </el-button>
-                                <template #dropdown>
-                                    <el-dropdown-menu>
-                                        <el-dropdown-item @click="handleExportExcel(1)" :icon="Document">
-                                            {{ t('exportAll') }}
-                                        </el-dropdown-item>
-                                        <el-dropdown-item :disabled="hehe.length < 0" @click="handleExportExcel(2)">
-                                            {{ t('exportToSearch') }}
-                                        </el-dropdown-item>
+                                <el-button type="info" v-if="hehe.length > 0" :icon="Close" size="small"
+                                    @click="handleReset">
+                                    {{ t('cancelFilter') }}
+                                </el-button>
+                            </div>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row  style="margin-left: 10px;">
+                    <el-col :span="3">
+                        <el-form-item>
+                            <div>
+                                <el-dropdown>
+                                    <el-button :icon="Document" type="primary">
+                                        {{ t('exportExcel') }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
+                                    </el-button>
+                                    <template #dropdown>
+                                        <el-dropdown-menu>
+                                            <el-dropdown-item @click="handleExportExcel(1)" :icon="Document">
+                                                {{ t('exportAll') }}
+                                            </el-dropdown-item>
+                                            <el-dropdown-item :disabled="hehe.length < 0" @click="handleExportExcel(2)">
+                                                {{ t('exportToSearch') }}
+                                            </el-dropdown-item>
 
-                                    </el-dropdown-menu>
-                                </template>
-                            </el-dropdown>
-                        </div>
-                    </el-form-item>
-                </el-col>
-                
-                <el-col :span="3">
-                    <router-link :to="{ name: 'CreateProductForm' }">  <el-button type="primary">+ {{ t('createNew') }}</el-button></router-link>
-                </el-col>
+                                        </el-dropdown-menu>
+                                    </template>
+                                </el-dropdown>
+                            </div>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row style="margin-left: 10px;">
+                    <el-col :span="12">
+                        <router-link :to="{ name: 'CreateProductForm' }"> <el-button size="" type="primary">+ {{ t('createNew')
+                                }}</el-button></router-link>
+                    </el-col>
+                </el-row>
+
+
+
+
+
             </el-row>
         </div>
     </el-form>
@@ -246,11 +255,11 @@ const handleExportExcel = async (mode: number) => {
 
 
 <style scoped>
-.search-form {
+/* .search-form {
     background-color: #f9f9f9;
     padding-top: 20px;
     padding-left: 20px;
     border-radius: 5px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
+} */
 </style>

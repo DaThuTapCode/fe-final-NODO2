@@ -24,8 +24,8 @@ const emit = defineEmits<{
   (e: 'deleted', id: number): void
 }>();
 
-const handleOpenTab = ( dataTab: any, categoryId: number) => {
-  emit('openTab',dataTab, categoryId);
+const handleOpenTab = (dataTab: any, categoryId: number) => {
+  emit('openTab', dataTab, categoryId);
 }
 
 const onPageChange = (newPage: number) => {
@@ -46,11 +46,10 @@ const handleDeleted = (id: number) => {
     <CategoryFormSearch />
   </div> -->
   <!-- Bảng -->
-  <el-table border  v-if="categories.length" :data="categories" :row-key="(row: CategoryResponse) => row.id"
-    style="width: 100%;  border-radius: 15px;">
-    <el-table-column prop="STT" label="STT" width="50" />
+  <el-table style="font-size: x-small; height: 350px; font-weight: 400;" border v-if="categories.length" :data="categories"
+    :row-key="(row: CategoryResponse) => row.id">
     <!-- Cột ảnh -->
-    <el-table-column prop="img" :label="t('image')" width="100">
+    <el-table-column align="center" prop="img" :label="t('image')" width="100">
       <template v-slot="{ row }">
         <img v-if="row.img !== null" :src="row.img" alt="Ảnh"
           style="width: 50%; max-height: 50px; border-radius: 10px" />
@@ -58,14 +57,14 @@ const handleDeleted = (id: number) => {
           style="width: 50%; max-height: 50px; border-radius: 10px" />
       </template>
     </el-table-column>
-    <el-table-column prop="categoryCode" :label="t('categoryCode')" width="150" />
-    <el-table-column prop="name" :label="t('name')" width="120" />
+    <el-table-column prop="categoryCode" :label="t('categoryCode')" width="100" />
+    <el-table-column prop="name" :label="t('name')" width="110" />
     <el-table-column prop="description" :label="t('description')" width="120" />
-    <el-table-column prop="createdDate" :label="t('createdDate')" width="180" />
-    <el-table-column prop="modifiedDate" :label="t('modifiedDate')" width="180" />
-    <el-table-column prop="createdBy" :label="t('createdBy')" width="180" />
-    <el-table-column prop="modifiedBy" :label="t('modifiedBy')" width="180" />
-    <el-table-column prop="status" :label="t('status')">
+    <el-table-column prop="createdDate" :label="t('createdDate')" width="130" />
+    <el-table-column prop="modifiedDate" :label="t('modifiedDate')" width="130" />
+    <el-table-column prop="createdBy" :label="t('createdBy')" width="100" />
+    <el-table-column prop="modifiedBy" :label="t('modifiedBy')" width="100" />
+    <el-table-column prop="status" width="120" align="center" :label="t('status')">
       <template v-slot="{ row }">
         <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'danger'">{{ t(row.status) }}</el-tag>
       </template>
@@ -87,15 +86,9 @@ const handleDeleted = (id: number) => {
   </div>
   <!-- Phân trang -->
   <div class="demo-pagination-block" style="float: right; margin: 10px;">
-    <el-pagination v-model:current-page="pager.page" 
-    v-model:page-size="pager.size" 
-    :page-sizes="[5, 10, 20, 50]"
-      :size="'default'" 
-      :disabled="false" 
-      :background="false" 
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="pager.totalElements" 
-      @size-change="onSizeChange" @current-change="onPageChange" />
+    <el-pagination v-model:current-page="pager.page" v-model:page-size="pager.size" :page-sizes="[5, 10, 20, 50]"
+      :size="'default'" :disabled="false" :background="false" layout="total, sizes, prev, pager, next, jumper"
+      :total="pager.totalElements" @size-change="onSizeChange" @current-change="onPageChange" />
   </div>
   <!-- /Phân trang -->
 
@@ -103,5 +96,4 @@ const handleDeleted = (id: number) => {
 
 
 
-<style scoped>
-</style>
+<style scoped></style>

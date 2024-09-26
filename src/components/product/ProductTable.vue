@@ -7,6 +7,7 @@ import ProductAction from './ProductAction.vue';
 import ProductFormSearch from './ProductFormSearch.vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { NotificationUtil } from '@/util/Notification';
 const { t } = useI18n();
 
 //Service
@@ -44,8 +45,12 @@ const fetchProduct = async (paginationF: any, paramsSearchF: any) => {
 // XÓa sản phẩm
 const deleteProduct = async (id: number) => {
   try {
-    await productService.deleteProduct(id);
+   const response =  await productService.deleteProduct(id);
+   if(response.status === 204){
+    NotificationUtil.openMessageSuccess(t('success'), t('deleteSuccessfully'))
     fetchProduct(pagination.value, paramsSearch.value);
+   } 
+    
   } catch (error) {
     console.error('Lỗi khi xóa sản phẩm');
   }
@@ -80,7 +85,6 @@ watch(
 
 const handleSearchFetchProduct = async (dataSearch: any) => {
   await nextTick(); // Chờ đến khi Vue cập nhật DOM và route.query kịp thay đổi
-
   console.log('Current Query string:', queryString.value);
   console.log('dataSearch:', dataSearch);
   paramsSearchQuery.value = dataSearch;
@@ -114,16 +118,18 @@ onMounted(() => {
     v-if="products"
     :data="products"
     height="410"
-    style="width: 100%; border-radius: 10px; overflow: hidden;"
+    style="width: 100%; font-size: x-small; font-weight: 400;"
     :row-key="(row: ProductSearchResponse) => row.id"
     stripe
+    border
     highlight-current-row
   >
     <!-- Ảnh -->
-    <el-table-column fixed prop="img" :label="t('image')" width="120">
+    <el-table-column align="center" fixed prop="img" :label="t('image')" width="120">
       <template #default="{ row }">
         <img
           v-if="row.img !== null"
+          
           :src="row.img"
           :alt="row.name"
           style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px"
@@ -153,16 +159,16 @@ onMounted(() => {
     <el-table-column prop="price" :label="t('price')" width="120" />
 
     <!-- Ngày sửa -->
-    <el-table-column prop="modifiedDate" :label="t('modifiedDate')" width="160" />
+    <!-- <el-table-column prop="modifiedDate" :label="t('modifiedDate')" width="160" /> -->
 
     <!-- Người sửa -->
-    <el-table-column prop="modifiedBy" :label="t('modifiedBy')" width="120" />
+    <!-- <el-table-column prop="modifiedBy" :label="t('modifiedBy')" width="120" /> -->
 
     <!-- Ngày tạo -->
-    <el-table-column prop="createdDate" :label="t('createdDate')" width="160" />
+    <!-- <el-table-column prop="createdDate" :label="t('createdDate')" width="160" /> -->
 
     <!-- Người tạo -->
-    <el-table-column prop="createdBy" :label="t('createdBy')" width="120" />
+    <!-- <el-table-column prop="createdBy" :label="t('createdBy')" width="120" /> -->
 
     <!-- Trạng thái -->
     <el-table-column prop="status" :label="t('status')" width="120">
@@ -201,7 +207,6 @@ onMounted(() => {
 .el-table {
   background-color: #f5f7fa;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
 }
 
 .el-table th {

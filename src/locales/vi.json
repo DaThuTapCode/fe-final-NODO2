@@ -1,6 +1,6 @@
 {
   "titleHeaderAdmin": "Tiêu đề Quản trị",
-  "categoryManagement": "Quản lý loại sản phẩm",
+  "categoryManagement": "Quản lý danh mục",
   "productManagement": "Quản lý sản phẩm",
   "search": "Tìm kiếm",
   "exportExcel": "Xuất Excel",
@@ -11,7 +11,7 @@
   "enterCodeToSearch": "Nhập mã cần tìm",
   "enterStartDate": "Ngày bắt đầu",
   "enterEndDate": "Ngày kết thúc",
-  "createNewCategory": "Thêm mới loại sản phẩm",
+  "createNewCategory": "Thêm mới danh mục",
   "createNewProduct": "Thêm mới sản phẩm",
   "noData": "Không có dữ liệu",
   "image": "Ảnh",

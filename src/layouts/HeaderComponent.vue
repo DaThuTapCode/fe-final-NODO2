@@ -1,11 +1,3 @@
-<template>
-  <h1>
-    <!-- {{ t('titleHeaderAdmin') }}  -->
-    <el-button @click="changeLanguage('vi')"  :class="locale === 'vi' ? 'lang-button' : ''">Check VN</el-button>
-    <el-button @click="changeLanguage('en')"  :class="locale === 'en' ? 'lang-button' : ''">Check EN</el-button>
-  </h1>
-</template>
-
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n';
 import { setLanguage } from '../services/api'; // Import hàm setLanguage
@@ -18,6 +10,15 @@ const changeLanguage = (lang: string) => {
   setLanguage(lang); // Cập nhật ngôn ngữ trong apiClient
 };
 </script>
+
+
+<template>
+  <h1>
+    <!-- {{ t('titleHeaderAdmin') }}  -->
+    <el-button @click="changeLanguage('vi')"  :class="locale === 'vi' ? 'lang-button' : ''">Check VN</el-button>
+    <el-button @click="changeLanguage('en')"  :class="locale === 'en' ? 'lang-button' : ''">Check EN</el-button>
+  </h1>
+</template>
 
 <style scoped>
 header {

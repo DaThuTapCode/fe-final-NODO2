@@ -24,7 +24,6 @@ const categoryNew = ref({
 </script>
 
 <template>
-    <h1 style="text-align: center;">Thêm loại sản phẩm mới</h1>
     <div class="container">
         <div class="form-zone">
             <CategoryForm 
