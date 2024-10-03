@@ -1,48 +1,4 @@
-<template>
-    <el-row class="tac">
-      <el-col :span="1">
-        <el-menu
-          style="height: 100vh; width: fit-content; overflow-y: auto;"
-          :collapse="isCollapsed"
-          active-text-color="#ffd04b"
-          background-color="#2A3650"
-          class="el-menu-vertical-demo"
-          :default-active="activeMenu"
-          text-color="#fff"
-          @open="handleOpen"
-          @close="handleClose"
-          @select="handleSelect"
-        >
-          <el-sub-menu index="1">
-            <template #title>
-              <el-icon>
-                <Box />
-              </el-icon>
-              <span v-if="!isCollapsed">{{ t('productManagement') }}</span>
-            </template>
-            <router-link :to="{ name: 'CreateProductForm' }">
-              <el-menu-item index="1-1">{{ t('createNewProduct') }}</el-menu-item>
-            </router-link>
-            <router-link :to="{ name: 'ListProduct' }">
-              <el-menu-item index="1-2">{{ t('productList') }}</el-menu-item>
-            </router-link>
-          </el-sub-menu>
-          <router-link :to="{ name: 'CategoryView' }">
-            <el-menu-item index="2">
-              <el-icon>
-                <List />
-              </el-icon>
-              <span v-if="!isCollapsed">{{ t('categoryManagement') }}</span>
-            </el-menu-item>
-          </router-link>
-        </el-menu>
-      </el-col>
-    </el-row>
-  </template>
-  
-  
-
-  <script lang="ts" setup>
+<script lang="ts" setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { Box, List } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
@@ -54,7 +10,7 @@ const isCollapsed = ref(false);
 
 // Hàm xử lý khi màn hình thay đổi kích thước
 const handleResize = () => {
-  if (window.innerWidth <= 768) {
+  if (window.innerWidth <= 1000) {
     isCollapsed.value = true; // Tự động thu gọn khi màn hình nhỏ hơn 768px
   } else {
     isCollapsed.value = false; // Mở rộng menu khi màn hình lớn hơn 768px
@@ -90,8 +46,46 @@ const handleClose = (key: string, keyPath: string[]) => {
 };
 </script>
 
+<template>
+  <el-row class="tac">
+    <el-col :span="1">
+      <el-menu style="height: 100vh; width: fit-content; overflow-y: auto;" :collapse="isCollapsed"
+        active-text-color="#ffd04b" background-color="#2A3650" class="el-menu-vertical-demo"
+        :default-active="activeMenu" text-color="#fff" @open="handleOpen" @close="handleClose" @select="handleSelect">
+        <router-link :to="{ name: 'ListProduct' }">
+          <el-menu-item index="1">
+            <el-icon>
+              <Box />
+            </el-icon>
+            <span v-if="!isCollapsed">{{ t('productManagement') }}</span>
+          </el-menu-item>
+        </router-link>
+        <router-link :to="{ name: 'CategoryView' }">
+          <el-menu-item index="2">
+            <el-icon>
+              <List />
+            </el-icon>
+            <span v-if="!isCollapsed">{{ t('categoryManagement') }}</span>
+          </el-menu-item>
+        </router-link>
+      </el-menu>
+    </el-col>
+  </el-row>
+</template>
+
 <style>
-/* .tac {
-    min-width: 250px;
-} */
+.brand {
+  color: white;
+  text-align: center;
+  font-size: x-large;
+  /* width: 200px; */
+  margin-top: 10px;
+  padding-left: 70px
+}
+
+@media (max-width: 1000px) {
+  .brand {
+    width: 10px;
+  }
+}
 </style>

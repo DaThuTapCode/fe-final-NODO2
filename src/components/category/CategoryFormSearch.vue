@@ -1,16 +1,19 @@
 <script lang="ts" setup>
-import { CategoryService } from '@/services/admin/category/CategoryService';
-import { Search, Document } from '@element-plus/icons-vue';
-import { reactive, ref, defineEmits, watch } from 'vue';
+import { Search, Document, Close } from '@element-plus/icons-vue';
+import { reactive, ref, defineEmits, watch, computed } from 'vue';
 import CategoryForm from './CategoryForm.vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { dayjs } from 'element-plus';
 import { NotificationUtil } from '@/util/Notification';
-const { t, locale } = useI18n();
+import en from "element-plus/es/locale/lang/en"; // Import ngôn ngữ tiếng Anh
+import vi from "element-plus/es/locale/lang/vi";
+const { t } = useI18n();
 
+const route = useRoute();
+const router = useRouter();
 
-const categoryService = new CategoryService();
+const data = ref<any>({});
 
 const paramSearch = reactive({
   categoryCode: '',
@@ -25,9 +28,6 @@ const emit = defineEmits<{
   (e: 'exportExcelCategory', mode: number): void
 }>();
 
-
-
-const data = ref<any>({});
 const handleOpenTabAddCategory = () => {
   const viewMode = 'create'
   const dataTab = {
@@ -48,10 +48,43 @@ const handleExportExcel = (mode: number,) => {
   emit('exportExcelCategory', mode);
 };
 
+const handleSearch = () => {
+  // Thực hiện tìm kiếm
+  const startDateParsed = dayjs(paramSearch.startDate, 'DD-MM-YYYY');
+  const endDateParsed = dayjs(paramSearch.endDate, 'DD-MM-YYYY');
 
+  if (startDateParsed.isAfter(endDateParsed)) {
+    NotificationUtil.openMessageError(t('error'), t('startDateIsBeforeEndDate'));
+    return;
+  }
 
-const route = useRoute();
-const router = useRouter();
+  const queryParams = {
+    categoryCode: paramSearch.categoryCode.trim() || undefined,
+    name: paramSearch.name.trim() || undefined,
+    startDate: paramSearch.startDate || undefined,
+    endDate: paramSearch.endDate || undefined
+  }
+  const filteredParams = Object.fromEntries(
+    Object.entries(queryParams).filter(([_, v]) => v !== undefined)
+  );
+  const queryString = new URLSearchParams(filteredParams as Record<string, string>).toString();
+
+  router.push({
+    path: '/admin/category',
+    query: filteredParams
+  });
+
+  emit('searchCategory', queryString);
+};
+
+const handleReset = () => {
+  paramSearch.name = '';
+  paramSearch.categoryCode = '';
+  paramSearch.startDate = '';
+  paramSearch.endDate = '';
+  handleSearch(); // Đẩy route với query rỗng
+};
+
 watch(
   () => route.query,
   (newQuery) => {
@@ -71,72 +104,72 @@ watch(
   },
   { immediate: true }
 );
+const currentLanguage = localStorage.getItem('language') || 'en';
 
-const handleSearch = () => {
-  // Thực hiện tìm kiếm
-  const startDateParsed = dayjs(paramSearch.startDate, 'DD-MM-YYYY');
-  const endDateParsed = dayjs(paramSearch.endDate, 'DD-MM-YYYY');
+const locale = computed(() => {
+  return currentLanguage === 'vi' ? vi : en;
+});
 
-  if (startDateParsed.isAfter(endDateParsed)) {
-    NotificationUtil.openMessageError(t('error'), t('startDateIsBeforeEndDate'));
-    return;
-  }
-
-  const queryParams = {
-    categoryCode: paramSearch.categoryCode || undefined,
-    name: paramSearch.name || undefined,
-    startDate: paramSearch.startDate || undefined,
-    endDate: paramSearch.endDate || undefined
-  }
-  const filteredParams = Object.fromEntries(
-    Object.entries(queryParams).filter(([_, v]) => v !== undefined)
-  );
-  const queryString = new URLSearchParams(filteredParams as Record<string, string>).toString();
-
-  router.push({
-    path: '/admin/category',
-    query: filteredParams
-  });
-
-  emit('searchCategory', queryString);
-};
 </script>
 
 <template>
   <el-form :model="paramSearch">
     <div class="search-form">
       <el-row :gutter="20">
-        <el-col :span="3">
-          <el-form-item>
-            <el-input class="input-control" v-model="paramSearch.name" :placeholder="t('enterNameToSearch')" />
-          </el-form-item>
-        </el-col>
 
-        <el-col :span="3">
-          <el-form-item>
-            <el-input class="input-control" v-model="paramSearch.categoryCode" :placeholder="t('enterCodeToSearch')" />
-          </el-form-item>
-        </el-col>
+        <el-row>
+          <el-col :span="11" style="margin-left: 10px;">
+            <el-form-item>
+              <el-input maxlength="255" class="input-control" v-model="paramSearch.name"
+                :placeholder="t('enterNameToSearch')" />
+            </el-form-item>
+          </el-col>
 
-        <el-col :span="3">
-          <el-form-item>
-            <el-date-picker  class="input-control" v-model="paramSearch.startDate" format="DD-MM-YYYY"
-              value-format="DD-MM-YYYY" type="date" :placeholder="t('enterStartDate')" />
-          </el-form-item>
-        </el-col>
+          <el-col :span="1">
 
-        <el-col :span="3">
-          <el-form-item>
-            <el-date-picker class="input-control" v-model="paramSearch.endDate" format="DD-MM-YYYY"
-              value-format="DD-MM-YYYY" type="date" :placeholder="t('enterEndDate')" />
-          </el-form-item>
-        </el-col>
+          </el-col>
+
+          <el-col :span="11">
+            <el-form-item>
+              <el-input maxlength="20" class="input-control" v-model="paramSearch.categoryCode"
+                :placeholder="t('enterCodeToSearch')" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+
+          <el-col :span="11">
+            <el-config-provider :locale="locale">
+              <el-form-item>
+                <el-date-picker style="margin-left: 10px; width: 170px" class="input-control" v-model="paramSearch.startDate" format="DD-MM-YYYY"
+                  value-format="DD-MM-YYYY" type="date" :placeholder="t('enterStartDate')" />
+              </el-form-item>
+            </el-config-provider>
+          </el-col>
+          <el-col :span="1">
+
+          </el-col>
+          <el-col :span="11">
+            <el-config-provider :locale="locale">
+              <el-form-item>
+                <el-date-picker style="width: 170px" class="input-control" v-model="paramSearch.endDate" format="DD-MM-YYYY"
+                  value-format="DD-MM-YYYY" type="date" :placeholder="t('enterEndDate')" />
+              </el-form-item>
+            </el-config-provider>
+          </el-col>
+        </el-row>
+
 
         <e-row>
           <el-col :span="4">
             <el-form-item>
-              <el-button size="small" class="input-control" type="success" :icon="Search" round @click="handleSearch">
+              <el-button class="input-control" type="success" :icon="Search" @click="handleSearch">
                 {{ t('search') }}
+              </el-button>
+              <el-button type="info" v-if="Object.keys(route.query).length > 0" :icon="Close" size="small"
+                @click="handleReset">
+                {{ t('cancelFilter') }}
               </el-button>
             </el-form-item>
           </el-col>
@@ -146,7 +179,7 @@ const handleSearch = () => {
           <el-col :span="5">
             <el-form-item>
               <el-dropdown>
-                <el-button size="small" class="input-control" :icon="Document" type="primary">
+                <el-button class="input-control" :icon="Document" type="primary">
                   {{ t('exportExcel') }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
                 </el-button>
                 <template #dropdown>
@@ -167,7 +200,7 @@ const handleSearch = () => {
         <e-row>
           <el-col :span="4">
             <el-form-item>
-              <el-button size="small" class="input-control" @click="handleOpenTabAddCategory" type="primary"> + {{
+              <el-button class="input-control" @click="handleOpenTabAddCategory" type="primary"> + {{
                 t('createNewCategory') }}</el-button>
             </el-form-item>
           </el-col>
@@ -182,6 +215,7 @@ const handleSearch = () => {
 <style>
 .input-control {
   font-size: smaller;
+
 }
 
 /* .search-form {

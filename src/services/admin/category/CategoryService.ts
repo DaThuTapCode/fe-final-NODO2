@@ -13,9 +13,9 @@ export class CategoryService {
 
     private uriUpdateCategory = '/api/category/update';
     private uriCreateCategory = '/api/category/create';
-    
+
     private uriExportExcel = "/api/excel/categories"
-    
+
 
     async getCategoryById(id: number): Promise<CategoryResponse> {
         try {
@@ -29,7 +29,8 @@ export class CategoryService {
 
     async getPageCategory(pagination: PaginationObject, queryString: string) {
         try {
-            if(queryString.length > 0) {
+            LoadingUtil.openLoading(true);
+            if (queryString.length > 0) {
                 const response = await apiClient.post(`${this.uriGetPageCategory}?${queryString}`, pagination);
                 return response.data;
             }
@@ -39,17 +40,15 @@ export class CategoryService {
         } catch (error) {
             console.error('Lỗi khi lấy category');
             throw error;
+        } finally {
+            LoadingUtil.openLoading(false);
         }
     }
 
     async deleteCategory(id: number) {
-        try {
-            const response = await apiClient.put(`${this.uriDeleteCategory}/${id}`);
-            return response;
-        } catch (error) {
-            console.error('Lỗi khi xóa category: ', error);
-        }
+        return await apiClient.put(`${this.uriDeleteCategory}/${id}`);
     }
+
 
     async updateCategory(id: number, data: FormData) {
         try {
@@ -65,50 +64,44 @@ export class CategoryService {
         try {
             LoadingUtil.openLoading(true);
             const response = await apiClient.post(`${this.uriCreateCategory}`, data);
-            if(response.status === 200) {
-                LoadingUtil.openLoading(false);
-            }
-            LoadingUtil.openLoading(false);
+
             return response;
         } catch (error: any) {
             console.error('Lỗi khi thêm category: ', error);
-            LoadingUtil.openLoading(false);
             throw error;
-            // throw error;
+        } finally {
+            LoadingUtil.openLoading(false);
         }
     }
 
     async exportExcel(mode: number, queryString: string) {
-        try {
 
-            let  apiUrl  = ``;
-            if(mode === 1){
-                apiUrl  = `${this.uriExportExcel}/${mode}`;
-            }else {
-                apiUrl  = `${this.uriExportExcel}/${mode}?${queryString}`;
+            let apiUrl = ``;
+            if (mode === 1) {
+                apiUrl = `${this.uriExportExcel}/${mode}`;
+            } else {
+                apiUrl = `${this.uriExportExcel}/${mode}?${queryString}`;
             }
 
             const response = await apiClient.get(apiUrl, {
                 responseType: 'blob' // Đặt kiểu phản hồi là blob để nhận file
             });
-            
+
             // Tạo URL từ blob
             const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             const downloadUrl = window.URL.createObjectURL(blob);
-    
+
             // Tạo link để tải file
             const link = document.createElement('a');
             link.href = downloadUrl;
             link.download = `exported-file-${mode}.xlsx`; // Tên file khi tải về
             link.click();
-    
+
             // Giải phóng bộ nhớ
             window.URL.revokeObjectURL(downloadUrl);
-    
-        } catch (error) {
-            // NotificationUtil.openMessageError('Lỗi xuất excel!');
-        }
+
+        return response;
     }
-    
+
 
 }

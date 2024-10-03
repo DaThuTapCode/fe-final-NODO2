@@ -12,7 +12,11 @@
     "enterStartDate": "Start date",
     "enterEndDate": "End date",
     "createNewCategory": "Create new category",
+    "updateCategory": "Update category",
+    "detailCategory": "Detail category",
     "createNewProduct": "Create new product",
+    "updateProduct": "Update product",
+    "detailProduct": "Detail product",
     "noData": "No data",
     "image": "Image",
     "code": "Code",
@@ -62,7 +66,17 @@
     "quantityIsIntegerAndGreaterThan0": "Quantity is integer and greater than 0",
     "quantityIsIntegerAndLessThan2000000000": "Quantity is integer and less than 2.000.000.000",
     "upLoadImage": "Upload only image",
-    "codeNumbersOnly": "Code is character and number"
-
+    "codeNumbersOnly": "Code is character and number",
+    "total": "Total {total}",
+    "perPage": "{size}/page",
+    "goTo": "Go to",
+    "deleteProduct": "Delete product",
+    "doYouWantDeleteProduct": "Do you want delete this product {productName}?",
+    "deleteCategory": "Delete category",
+    "doYouWantDeleteCategory": "Do you want delete this category {categoryName}?",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "confirmChangeLanguage": "Reload website?",
+    "nameNoSpecialCharacters": "Name no special characters"
 
 }

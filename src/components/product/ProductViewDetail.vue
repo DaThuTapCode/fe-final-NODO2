@@ -5,6 +5,7 @@ import { ProductService } from '@/services/admin/product/ProductService';
 import { useRoute } from 'vue-router';
 import { NotificationUtil } from '@/util/Notification';
 import { useI18n } from 'vue-i18n';
+import router from '@/routers/router';
 const productService = new ProductService;
 const { t } = useI18n();
 const productD = ref<any>(null); // Khởi tạo giá trị null để biểu thị dữ liệu chưa được tải
@@ -15,8 +16,10 @@ const id = route.params.id;
 const getProductById = async () => {
   try {
     const response = await productService.getProductById(id);
-    productD.value = response; 
-  } catch (error) {
+    productD.value = response.data; 
+  } catch (error:any) {
+    NotificationUtil.openMessageError(t('error'), error.response.data.message);
+    router.push({name: "ListProduct"})
     console.error('Lỗi khi lấy sản phẩm theo id: ', error);
   }
 }

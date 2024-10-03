@@ -3,7 +3,6 @@ import { ref } from 'vue';
 import CategoryForm from './CategoryForm.vue';
 import { CategoryService } from '@/services/admin/category/CategoryService';
 import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
 
 const categoryService = new CategoryService();
 
@@ -11,13 +10,11 @@ const categoryService = new CategoryService();
 const callCreateCategory = async(data: FormData) =>{
     try {
         categoryService.createCategory(data);
+        
     } catch (error) {
-        console.error('Lỗi thêm category: ', error)
+        console.error('Lỗi thêm category: ', error);
     }
 }
-
-
-
 
 const categoryNew = ref({
 })

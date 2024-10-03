@@ -1,7 +1,6 @@
 import { apiClient } from "@/services/api";
 import { PaginationObject } from "@/type/util/PaginationObject";
 import { LoadingUtil } from "@/util/Loading";
-import { NotificationUtil } from "@/util/Notification";
 
 export class ProductService {
     private uriGetPageProduct = '/api/product/search';
@@ -18,36 +17,23 @@ export class ProductService {
             if (paramSearch !== null && typeof paramSearch === 'string' && paramSearch !== '') {
                 const response = await apiClient.post(`${this.uriGetPageProduct}?${paramSearch}`, pagin);
                 if (response.data.empty === true) {
-                    // NotificationUtil.openMessageError('Không có sản phẩm nào được tìm thấy!');
-                    LoadingUtil.openLoading(false);
                     return response.data;
                 }
-                LoadingUtil.openLoading(false);
-                // alert(paramSearch)
-                // NotificationUtil.openMessageSuccess('','Tìm thấy sản phẩm');
                 return response.data;
-
             }
             // Nếu không có tham số tìm kiếm, chỉ gửi phân trang
             const response = await apiClient.post(this.uriGetPageProduct, pagin);
-            LoadingUtil.openLoading(false);
             return response.data;
         } catch (error) {
-            LoadingUtil.openLoading(false);
             // NotificationUtil.openMessageError('Lỗi khi lấy danh sách sản phẩm');
+        }finally {
+            LoadingUtil.openLoading(false);
         }
     }
 
 
-
-
     async getProductById(id: any) {
-        try {
-            const response = await apiClient.get(`${this.uriGetProductById}/${id}`);
-            return response.data;
-        } catch (error: any) {
-            // NotificationUtil.openMessageError(error.response.data.message);
-        }
+         return  await apiClient.get(`${this.uriGetProductById}/${id}`);
     }
 
     async createNewProduct(data: FormData) {

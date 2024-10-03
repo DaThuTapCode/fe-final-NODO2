@@ -9,22 +9,29 @@ import { NotificationUtil } from '@/util/Notification';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 
+const { t, locale } = useI18n();
 // Service lấy dữ liệu
 const categoryService = new CategoryService();
+// let tabIndex = 1;
+
+const editableTabsValue = ref('1'); // Giá trị mặc định là tab đầu tiên
+const editableTabs = ref<any[]>([]);
 
 // Dữ liệu cung cấp cho Component CategoryTable
 const categories = ref<CategoryResponse[]>([]);
-const category = ref({});
+
+const route = useRoute();
+
 const pager = ref<any>({});
+
 const pagination: PaginationObject = {
     page: 0,
     size: 5,
     sortBy: null,
     direction: null
 };
-const { t, locale } = useI18n();
-const paramString = ref('');
 
+const paramString = ref('');
 
 const handleSearchCategory = async (queryString: string) => {
     await nextTick(); // Chờ đến khi Vue cập nhật DOM và route.query kịp thay đổi
@@ -61,9 +68,10 @@ const handleUpdateCategory = (dataUp: any) => {
     updateCategory(dataUp);
 }
 
-let tabIndex = 1;
-const editableTabsValue = ref('1'); // Giá trị mặc định là tab đầu tiên
-const editableTabs = ref<any[]>([]);
+const handleLoadData = () => {
+    fetchCategories();
+}
+
 
 // Thêm tab đầu tiên vào mảng editableTabs
 editableTabs.value.push({
@@ -83,50 +91,44 @@ editableTabs.value.push({
     ],
 });
 watch(locale, () => {
-  editableTabs.value[0].title = t('list');
-  editableTabs.value.forEach(tab => {
-    console.log(tab.name)
-    if (tab.name === '2') {
-      tab.title = t('createNewCategory'); // Dịch lại tiêu đề
-    }
-    // if (tab.name === '3') {
-    //   tab.title = t('detail'); // Dịch lại tiêu đề
-    // }
-    // if (tab.name === '4') {
-    //   tab.title = t('update'); // Dịch lại tiêu đề
-    // }
-    if(tab.title === 'Update' || tab.title === 'Chỉnh sửa'){
-        tab.title = t('update');
-    }
-    if(tab.title === 'Chi tiết' || tab.title === 'Detail'){
-        tab.title = t('detail');
-    }
-  });
+    editableTabs.value[0].title = t('list');
+    editableTabs.value.forEach(tab => {
+        console.log(tab.name)
+        if (tab.name === '2') {
+            tab.title = t('createNewCategory'); 
+        }
+        if (tab.title === 'Update' + ' ' + tab.name  || tab.title === 'Chỉnh sửa' + ' ' + tab.name) {
+            tab.title = t('update') + ' ' + tab.name;
+        }
+        if (tab.title === 'Chi tiết' + ' ' + tab.name || tab.title === 'Detail' + ' ' + tab.name) {
+            tab.title = t('detail') + ' ' + tab.name;
+        }
+    });
 });
 // Hàm thêm tab mới
 const addTab = (tabData: { title: string; name: string; components: any[] }) => {
-  // Kiểm tra xem tab với tên đã tồn tại hay chưa
-  const existingTabIndex = editableTabs.value.findIndex(tab => tab.name === tabData.name);
+    // Kiểm tra xem tab với tên đã tồn tại hay chưa
+    const existingTabIndex = editableTabs.value.findIndex(tab => tab.name === tabData.name);
 
-  if (existingTabIndex !== -1) {
-    // Nếu tồn tại tab, thì xóa tab cũ trước khi thêm tab mới
-    removeTab(tabData.name);
-  }
+    if (existingTabIndex !== -1) {
+        // Nếu tồn tại tab, thì xóa tab cũ trước khi thêm tab mới
+        removeTab(tabData.name);
+    }
 
-  // Sử dụng một giá trị duy nhất cho tên tab mới (có thể dùng timestamp hoặc id tự tăng)
-  let uniqueTabName = `${tabData.name}-${new Date().getTime()}`; // Đảm bảo mỗi tab có tên duy nhất
-if(tabData.name === '2'){
-    uniqueTabName = tabData.name;
-}
-  // Thêm tab mới vào mảng editableTabs
-  editableTabs.value.push({
-    title: tabData.title,
-    name: uniqueTabName, // Tên tab duy nhất
-    components: tabData.components, // Mảng chứa nhiều component
-  });
+    let title = '';
+    if(tabData.name === '2'){
+        title = tabData.title;
+    }else{
+        title =  tabData.title + ' ' + tabData.name;
+    }
+    editableTabs.value.push({
+        title: title,
+        name: tabData.name, // Tên tab duy nhất
+        components: tabData.components, // Mảng chứa nhiều component
+    });
 
-  // Chuyển đến tab mới tạo
-  editableTabsValue.value = uniqueTabName;
+    // Chuyển đến tab mới tạo
+    editableTabsValue.value = tabData.name;
 };
 
 
@@ -138,8 +140,7 @@ const backTabOne = () => {
 // Hàm xóa tab
 const removeTab = (targetName: string) => {
     if (targetName === '1') {
-        // NotificationUtil.openMessageError(t('error'),'Không được xóa tab này!')
-        return; 
+        return;
     }
     const tabs = editableTabs.value;
     let activeName = editableTabsValue.value;
@@ -156,14 +157,7 @@ const removeTab = (targetName: string) => {
     editableTabsValue.value = activeName;
     editableTabs.value = tabs.filter((tab: any) => tab.name !== targetName);
 };
-const fetchCategoryById = async (id: number) => {
-    try {
-        const response = await categoryService.getCategoryById(id);
-        category.value = response;
-    } catch (error) {
-        console.error('Lỗi khi lấy category với id: ', error);
-    }
-}
+
 // Fetch dữ liệu cho danh sách Categories
 const fetchCategories = async () => {
     try {
@@ -182,7 +176,7 @@ const createCategory = async (data: FormData) => {
         fetchCategories();
         NotificationUtil.openMessageSuccess(t('success'), t('createCategorySuccessfully'));
     } catch (error: any) {
-        NotificationUtil.openMessageError(t('error'),error.response.data.message);
+        NotificationUtil.openMessageError(t('error'), error.response.data.message);
     }
 }
 
@@ -190,12 +184,14 @@ const createCategory = async (data: FormData) => {
 //Xóa category
 const deleteCategory = async (id: number) => {
     try {
-        await categoryService.deleteCategory(id);
+        const response = await categoryService.deleteCategory(id);
+        if (response.status === 204) {
+            fetchCategories();
+            NotificationUtil.openMessageSuccess(t('success'), t('deleteSuccessfully'));
+        }
+    } catch (error: any) {
+        NotificationUtil.openMessageError(t('error'), error.response.data.message);
         fetchCategories();
-        NotificationUtil.openMessageSuccess(t('success'), t('success'));
-    } catch (error) {
-        // NotificationUtil.openMessageError(t('success'), t('success'));
-        console.error(error)
     }
 }
 
@@ -204,6 +200,8 @@ const updateCategory = async (dataUp: any) => {
     try {
         await categoryService.updateCategory(dataUp.id, dataUp.value);
         fetchCategories();
+        let activeName = editableTabsValue.value;
+        removeTab(activeName);
         NotificationUtil.openMessageSuccess(t('success'), t('updateSuccesfully'));
     } catch (error: any) {
         console.error('Lỗi update category: ', error);
@@ -213,31 +211,30 @@ const updateCategory = async (dataUp: any) => {
 
 //Xuất excel 
 const handleExportExcel = async (mode: number) => {
-  try {
-    if(mode === 2){
-        if(!paramString.value.length){
-            NotificationUtil.openMessageError(t('error'), '');
-            return;
+    try {
+        if (mode === 2) {
+            if (!paramString.value.length) {
+                NotificationUtil.openMessageError(t('error'), '');
+                return;
+            }
         }
+        await categoryService.exportExcel(mode, paramString.value);
+        NotificationUtil.openMessageSuccess(t('success'), '');
+    } catch (error: any) {
+        NotificationUtil.openMessageError(t('error'), error.response.data.message);
+        console.error(error);
     }
-    await categoryService.exportExcel(mode, paramString.value);
-    NotificationUtil.openMessageSuccess(t('success'), '');
-  } catch (error) {
-    console.error(error);
-  }
 }
 
 
-const route = useRoute();
-
 // Theo dõi sự thay đổi của query params
 watch(
-  () => route.query,
-  (newQuery) => {
-    paramString.value = new URLSearchParams(newQuery as Record<string, string>).toString();
-    console.log('Query string updated:', paramString.value);
-  },
-  { immediate: true } // Đảm bảo lấy giá trị ngay khi khởi tạo
+    () => route.query,
+    (newQuery) => {
+        paramString.value = new URLSearchParams(newQuery as Record<string, string>).toString();
+        console.log('Query string updated:', paramString.value);
+    },
+    { immediate: true } // Đảm bảo lấy giá trị ngay khi khởi tạo
 );
 
 const hehe = (dataTab: any) => {
@@ -250,8 +247,9 @@ onMounted(() => {
 </script>
 
 <template>
-    <el-tabs v-model="editableTabsValue" type="card" class="demo-tabs"  @tab-remove="removeTab">
-        <el-tab-pane :closable="item.name !== '1'" v-for="item in editableTabs" :key="item.name" :label="item.title" :name="item.name">
+    <el-tabs v-model="editableTabsValue" type="card" class="demo-tabs" @tab-remove="removeTab">
+        <el-tab-pane :closable="item.name !== '1'" v-for="item in editableTabs" :key="item.name" :label="item.title"
+            :name="item.name">
             <div v-for="(component, index) in item.components" :key="index">
                 <component :is="component.component" v-bind="component.props" v-on="{
                     'pageChange': handlePageChange,
@@ -263,7 +261,8 @@ onMounted(() => {
                     'deleted': handleDeleted,
                     'updateCategory': handleUpdateCategory,
                     'exportExcelCategory': handleExportExcel,
-                    'backTabOne': backTabOne
+                    'backTabOne': backTabOne,
+                    'loadData': handleLoadData
                 }" />
             </div>
         </el-tab-pane>
@@ -271,8 +270,11 @@ onMounted(() => {
 </template>
 
 <style>
+.el-tabs__item{
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
 .demo-tabs>.el-tabs__content {
-    padding: 32px;
+    /* padding: 32px; */
     color: #6b778c;
     font-size: 32px;
     font-weight: 600;

@@ -1,6 +1,9 @@
 <script lang="ts" setup>
 import { ref, watch, defineProps, defineEmits, inject } from 'vue';
-import ProductForm from './ProductForm.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
 const props = defineProps<{
   type: string;
   visible: boolean;
@@ -16,7 +19,6 @@ const emit = defineEmits<{
 // Tạo một biến ref để giữ giá trị của visible
 const isVisible = ref(props.visible);
 
-
 // Đồng bộ hóa giữa props và isVisible
 watch(() => props.visible, (newVal) => {
   isVisible.value = newVal;
@@ -25,55 +27,35 @@ watch(() => props.visible, (newVal) => {
 // Inject hàm deleteProduct từ component cha
 const deleteProduct = inject<(id: number) => Promise<void>>('deleteProduct');
 
-
+const handleClose = () => {
+  isVisible.value = false; 
+  emit('close');
+};
 
 //Bắt sự kiện xóa
 const handleAction = () => {
-  if(props.type === 'delete') {
-    if(deleteProduct){
+  if (props.type === 'delete') {
+    if (deleteProduct) {
       deleteProduct(props.product.id);
     }
-  }else if (props.type === 'update') {
-    // 
-  }else if (props.type === 'view'){
-    // 
-   
   }
   handleClose;
 }
-
-const handleClose = () => {
-  isVisible.value = false; // Cập nhật biến local
-  // emit('update:visible', false); // Thông báo về component cha
-  emit('close');
-};
 </script>
 
 <template>
-  <el-dialog
-    v-model="isVisible"
-    :title="titleDialog"
-    width="500"
-    @close="handleClose"
-  >
-  <hr>
-    <div v-if="props.type === 'view'"> 
-        <ProductForm :view-mode="props.type" :dataProduct="product"/>
+  <el-dialog v-model="isVisible" width="500" @close="handleClose">
+    <div>
+      <el-alert :closable="false" :title="t('deleteProduct')" type="warning"
+        :description="t('doYouWantDeleteProduct', {productName: props.product.name})" show-icon />
     </div>
-    <span v-else-if="props.type === 'update'">This is an update</span>
-    <div v-else>
-       <el-alert title="Xóa sản phẩm" type="warning" :description="`Bạn có chắc muốn xóa ${props.product.name} ?`"
-      show-icon />
-    </div>
-    <template v-if="props.type === 'delete'" #footer>
+    <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleClose">Cancel</el-button>
+        <el-button @click="handleClose">{{ t('cancel') }}</el-button>
         <el-button type="primary" @click="handleAction">
-          Confirm
+          {{ t('confirm') }}
         </el-button>
       </div>
     </template>
   </el-dialog>
 </template>
-
-<style scoped></style>

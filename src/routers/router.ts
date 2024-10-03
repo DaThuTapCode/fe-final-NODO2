@@ -9,6 +9,10 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 
 const routes: Array<RouteRecordRaw> = [
     {
+        path: '/',
+        redirect: '/admin/category'
+    },
+    {
         path: '/admin',
         component: AdminView,
         children: [

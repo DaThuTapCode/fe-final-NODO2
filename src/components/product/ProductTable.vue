@@ -2,12 +2,14 @@
 import { ProductService } from '@/services/admin/product/ProductService';
 import { ProductSearchResponse } from '@/type/product/response/ProductSearchResponse';
 import { PaginationObject } from '@/type/util/PaginationObject';
-import { nextTick, onMounted, provide, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, provide, ref, watch } from 'vue';
 import ProductAction from './ProductAction.vue';
 import ProductFormSearch from './ProductFormSearch.vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { NotificationUtil } from '@/util/Notification';
+import en from "element-plus/es/locale/lang/en"; // Import ngôn ngữ tiếng Anh
+import vi from "element-plus/es/locale/lang/vi";
 const { t } = useI18n();
 
 //Service
@@ -50,8 +52,9 @@ const deleteProduct = async (id: number) => {
     NotificationUtil.openMessageSuccess(t('success'), t('deleteSuccessfully'))
     fetchProduct(pagination.value, paramsSearch.value);
    } 
-    
-  } catch (error) {
+  } catch (error: any) {
+    NotificationUtil.openMessageError(t('error'), error.response.data.message);
+    fetchProduct(pagination.value, paramsSearch.value);
     console.error('Lỗi khi xóa sản phẩm');
   }
 }
@@ -106,18 +109,27 @@ const handleSizeChange = (newSize: any) => {
 onMounted(() => {
   fetchProduct(pagination.value, paramsSearchQuery.value);
 })
+const hee = ref(localStorage.getItem('language') || 'en');  // Giá trị mặc định là 'en'
 
+const locale = computed(() => {
+  return hee.value === 'vi' ? vi : en;  // Giả định 'vi' và 'en' là các đối tượng ngôn ngữ
+});
+
+// Cập nhật giá trị 'localStorage' khi 'hee' thay đổi
+watch(hee, (newValue) => {
+  localStorage.setItem('language', newValue);
+});
 </script>
 
 <template>
+  
   <ProductFormSearch @search="handleSearchFetchProduct" />
   <p>{{ t('productList') }}</p>
-
+  <el-config-provider :locale="locale"> 
   <!-- Bảng -->
   <el-table
     v-if="products"
     :data="products"
-    height="410"
     style="width: 100%; font-size: x-small; font-weight: 400;"
     :row-key="(row: ProductSearchResponse) => row.id"
     stripe
@@ -125,20 +137,19 @@ onMounted(() => {
     highlight-current-row
   >
     <!-- Ảnh -->
-    <el-table-column align="center" fixed prop="img" :label="t('image')" width="120">
+    <el-table-column align="center" prop="img" :label="t('image')" width="120">
       <template #default="{ row }">
         <img
           v-if="row.img !== null"
-          
           :src="row.img"
           :alt="row.name"
-          style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px"
+          style="width: 40px; height: 40px; object-fit: cover; border-radius: 5px"
         />
         <img
           v-if="row.img === null"
           src="/noimage.png"
           :alt="row.name"
-          style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px"
+          style="width: 40px; height: 40px; object-fit: cover; border-radius: 5px"
         />
       </template>
     </el-table-column>
@@ -171,7 +182,7 @@ onMounted(() => {
     <!-- <el-table-column prop="createdBy" :label="t('createdBy')" width="120" /> -->
 
     <!-- Trạng thái -->
-    <el-table-column prop="status" :label="t('status')" width="120">
+    <el-table-column align="center" prop="status" :label="t('status')" width="120">
       <template v-slot="{ row }">
         <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'danger'">
           {{ t(row.status) }}
@@ -180,7 +191,7 @@ onMounted(() => {
     </el-table-column>
 
     <!-- Hành động -->
-    <el-table-column fixed="right" :label="t('action')" min-width="150">
+    <el-table-column min-width="150" align="center"  :label="t('action')" >
       <template #default="{ row }">
         <ProductAction :product="row" @delete="deleteProduct" />
       </template>
@@ -188,6 +199,7 @@ onMounted(() => {
   </el-table>
 
   <!-- Phân trang -->
+
   <div class="demo-pagination-block" style="float: right; margin: 10px;">
     <el-pagination
       v-model:current-page="pager.page"
@@ -201,6 +213,8 @@ onMounted(() => {
       @current-change="handlePageChange"
     />
   </div>
+</el-config-provider>
+
 </template>
 
 <style scoped>
@@ -226,6 +240,11 @@ onMounted(() => {
 
 .demo-pagination-block {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-end; /* Đảm bảo căn sang phải */
+  margin: 10px;
+  flex-wrap: wrap; /* Đảm bảo phần tử sẽ xuống dòng nếu cần */
 }
+
+
+
 </style>

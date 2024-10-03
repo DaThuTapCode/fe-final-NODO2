@@ -9,7 +9,7 @@
 <style>
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #EFF2F6
+    /* background-color: #EFF2F6 */
 }
 
 a {

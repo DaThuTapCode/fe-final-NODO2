@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, defineEmits, reactive, watch, onMounted } from 'vue';
+import { ref, defineEmits, reactive, watch, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Search, Close, Document } from '@element-plus/icons-vue';
 import { CategoryService } from '@/services/admin/category/CategoryService';
@@ -9,13 +9,18 @@ import { dayjs } from 'element-plus';
 import { NotificationUtil } from '@/util/Notification';
 import { useI18n } from 'vue-i18n';
 import { ProductService } from '@/services/admin/product/ProductService';
-
+import en from "element-plus/es/locale/lang/en"; // Import ngôn ngữ tiếng Anh
+import vi from "element-plus/es/locale/lang/vi";
 const { t } = useI18n();
 
 const categories = ref<CategoryResponse[]>([]); // Hứng dữ liệu danh sách category
+const categoryIsSelected = ref<CategoryResponse>();
 const categoryService = new CategoryService();
 const productService = new ProductService();
-
+//Emit
+const emit = defineEmits<{
+    (e: 'search', value: any): void
+}>();
 // Variable
 const paramSearch = reactive({
     productCode: '',
@@ -78,8 +83,8 @@ const handleSearch = () => {
 
     // Tạo đối tượng query params
     const queryParams = {
-        name: paramSearch.name || undefined,
-        productCode: paramSearch.productCode || undefined,
+        name: paramSearch.name.trim() || undefined,
+        productCode: paramSearch.productCode.trim() || undefined,
         startDate: paramSearch.startDate ? startDateParsed.format('DD-MM-YYYY') : undefined,
         endDate: paramSearch.endDate ? endDateParsed.format('DD-MM-YYYY') : undefined,
         categoryID: paramSearch.categoryID || undefined
@@ -113,15 +118,6 @@ const handleReset = () => {
     handleSearch(); // Đẩy route với query rỗng
 };
 
-// Sự kiện xuất excel
-const handleExportExcelAll = () => {
-    // Xử lý xuất Excel
-    alert('Xuất all');
-};
-const handleExportExcelBySearch = () => {
-    // Xử lý xuất Excel
-    alert('Xuất search');
-};
 
 // Load dữ liệu danh sách category
 const fetchCategories = async () => {
@@ -132,10 +128,7 @@ const fetchCategories = async () => {
         console.error('Lỗi fetchCategories trong ProductTable', error);
     }
 };
-//Emit
-const emit = defineEmits<{
-    (e: 'search', value: any): void
-}>();
+
 onMounted(() => {
     fetchCategories();
 });
@@ -149,70 +142,99 @@ const handleExportExcel = async (mode: number) => {
                 return;
             }
         }
-        await productService.exportExcel(mode, hehe.value);
+       const response =  await productService.exportExcel(mode, hehe.value);
         NotificationUtil.openMessageSuccess(t('success'), '');
-    } catch (error) {
+        console.log('response: ', response)
+    } catch (error: any) {
         console.error(error);
+        NotificationUtil.openMessageError(t('error'), error.response.data.message);
     }
 }
+const currentLanguage = localStorage.getItem('language') || 'en';
+
+const locale = computed(() => {
+    return currentLanguage === 'vi' ? vi : en;
+});
 
 </script>
-
 
 <template>
     <el-form :model="paramSearch">
         <div class="search-form">
-            <el-row :gutter="20" >
-                <el-col :span="3">
-                    <el-form-item>
-                        <el-input  v-model="paramSearch.name" :placeholder="t('enterNameToSearch')" />
-                    </el-form-item>
-                </el-col>
+            <el-row :gutter="20">
+                <el-row>
 
-                <el-col :span="3">
-                    <el-form-item>
-                        <el-input v-model="paramSearch.productCode" :placeholder="t('enterCodeToSearch')" />
-                    </el-form-item>
-                </el-col>
-
-                <el-col :span="3">
-                    <el-form-item>
-                        <el-date-picker format="DD-MM-YYYY" value-format="DD-MM-YYYY" v-model="paramSearch.startDate"
-                            type="date" :placeholder="t('enterStartDate')" />
-                    </el-form-item>
-                </el-col>
-
-                <el-col :span="3">
-                    <el-form-item>
-                        <el-date-picker format="DD-MM-YYYY" value-format="DD-MM-YYYY" v-model="paramSearch.endDate"
-                            type="date" :placeholder="t('enterEndDate')" />
-                    </el-form-item>
-                </el-col>
-
-                <el-col :span="3">
-                    <el-select v-model="paramSearch.categoryID" :placeholder="t('selectCategory')" filterable>
-                        <el-option v-for="category in categories" :key="category.id" :label="category.name"
-                            :value="category.id">
-                        </el-option>
-                    </el-select>
-                </el-col>
-
-                <el-row  style="margin-left: 10px;">
-                    <el-col :span="3">
+                    <el-col :span="11">
                         <el-form-item>
-                            <div>
-                                <el-button type="success" :icon="Search" round @click="handleSearch">
-                                    {{ t('search') }}
-                                </el-button>
-                                <el-button type="info" v-if="hehe.length > 0" :icon="Close" size="small"
-                                    @click="handleReset">
-                                    {{ t('cancelFilter') }}
-                                </el-button>
-                            </div>
+                            <el-input v-model="paramSearch.name" maxlength="255"
+                                :placeholder="t('enterNameToSearch')" />
                         </el-form-item>
                     </el-col>
+
+                    <el-col :span="1">
+
+                    </el-col>
+
+                    <el-col :span="11">
+                        <el-form-item>
+                            <el-input v-model="paramSearch.productCode" maxlength="10"
+                                :placeholder="t('enterCodeToSearch')" />
+                        </el-form-item>
+                    </el-col>
+
                 </el-row>
-                <el-row  style="margin-left: 10px;">
+
+                <el-row>
+                    <el-col :span="7">
+                        <el-config-provider :locale="locale">
+                            <el-form-item>
+                                <el-date-picker format="DD-MM-YYYY" value-format="DD-MM-YYYY"
+                                    v-model="paramSearch.startDate" type="date" :placeholder="t('enterStartDate')" />
+                            </el-form-item>
+                        </el-config-provider>
+
+                    </el-col>
+                    <el-col :span="1">
+
+                    </el-col>
+                    <el-col :span="7">
+                        <el-config-provider :locale="locale">
+                            <el-form-item>
+                                <el-date-picker format="DD-MM-YYYY" value-format="DD-MM-YYYY"
+                                    v-model="paramSearch.endDate" type="date" :placeholder="t('enterEndDate')" />
+                            </el-form-item>
+                        </el-config-provider>
+
+                    </el-col>
+                    <el-col :span="1">
+
+                    </el-col>
+                    <el-col :span="7">
+                        <el-select v-model="paramSearch.categoryID" :placeholder="t('selectCategory')" filterable>
+                            <el-option v-for="category in categories" :key="category.id" :label="category.name"
+                                :value="category.id">
+                            </el-option>
+                        </el-select>
+                    </el-col>
+                </el-row>
+
+
+
+                <el-row style="margin-left: 10px;">
+                    <el-col :span="3">
+                        <el-form-item>
+                            <el-button type="success" :icon="Search" @click="handleSearch">
+                                {{ t('search') }}
+                            </el-button>
+
+                        </el-form-item> <el-button type="info" v-if="Object.keys(route.query).length > 0" :icon="Close"
+                            size="small" @click="handleReset">
+                            {{ t('cancelFilter') }}
+                        </el-button>
+                    </el-col>
+                </el-row>
+
+                <el-row style="margin-left: 10px;">
                     <el-col :span="3">
                         <el-form-item>
                             <div>
@@ -225,7 +247,8 @@ const handleExportExcel = async (mode: number) => {
                                             <el-dropdown-item @click="handleExportExcel(1)" :icon="Document">
                                                 {{ t('exportAll') }}
                                             </el-dropdown-item>
-                                            <el-dropdown-item :disabled="hehe.length < 0" @click="handleExportExcel(2)">
+                                            <el-dropdown-item :disabled="hehe.length <= 0"
+                                                @click="handleExportExcel(2)">
                                                 {{ t('exportToSearch') }}
                                             </el-dropdown-item>
 
@@ -238,15 +261,11 @@ const handleExportExcel = async (mode: number) => {
                 </el-row>
                 <el-row style="margin-left: 10px;">
                     <el-col :span="12">
-                        <router-link :to="{ name: 'CreateProductForm' }"> <el-button size="" type="primary">+ {{ t('createNew')
+                        <router-link :to="{ name: 'CreateProductForm' }"> <el-button size="" type="primary">+ {{
+                            t('createNew')
                                 }}</el-button></router-link>
                     </el-col>
                 </el-row>
-
-
-
-
-
             </el-row>
         </div>
     </el-form>
@@ -254,12 +273,4 @@ const handleExportExcel = async (mode: number) => {
 
 
 
-<style scoped>
-/* .search-form {
-    background-color: #f9f9f9;
-    padding-top: 20px;
-    padding-left: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-} */
-</style>
+<style scoped></style>
